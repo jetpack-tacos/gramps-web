@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode'
 
 import {fireEvent} from './util.js'
 
-export const __APIHOST__ = 'http://localhost:5555'
+export const __APIHOST__ = ''
 
 // Access token expiration time (15 minutes in milliseconds)
 export const ACCESS_TOKEN_EXPIRY_MS = 15 * 60 * 1000
@@ -108,33 +108,6 @@ export function setRecentObjects(data) {
   const objectData = tree ? {[tree]: data} : data
   const stringData = JSON.stringify(objectData)
   localStorage.setItem('recentObjects', stringData)
-}
-
-export function getChatHistory() {
-  try {
-    const string = localStorage.getItem('chatMessages')
-    const data = JSON.parse(string)
-    const tree = getTreeId()
-    if (tree) {
-      return data[tree]
-    }
-    return []
-  } catch (e) {
-    return []
-  }
-}
-
-export function setChatHistory(data) {
-  const tree = getTreeId()
-  if (!tree) {
-    return
-  }
-  const stringDataAll = localStorage.getItem('chatMessages')
-  const objectDataAll = JSON.parse(stringDataAll)
-  const objectDataNew = {[tree]: data}
-  const objectData = {...objectDataAll, ...objectDataNew}
-  const stringData = JSON.stringify(objectData)
-  localStorage.setItem('chatMessages', stringData)
 }
 
 export async function apiResetPassword(username) {

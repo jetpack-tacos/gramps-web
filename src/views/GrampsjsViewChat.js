@@ -10,8 +10,7 @@ export class GrampsjsViewChat extends GrampsjsView {
       css`
         :host {
           height: calc(100vh - 85px);
-          margin-top: 0;
-          margin-bottom: 0;
+          margin: 0;
           display: flex;
           overflow: hidden;
         }

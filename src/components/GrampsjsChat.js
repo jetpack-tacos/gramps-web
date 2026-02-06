@@ -1,16 +1,14 @@
 import {html, css, LitElement} from 'lit'
-import '@material/mwc-button'
+import '@material/web/icon/icon.js'
+import '@material/web/iconbutton/icon-button.js'
 
+import {mdiMenu} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import {renderIconSvg} from '../icons.js'
+import './GrampsjsChatSidebar.js'
+import './GrampsjsChatMessages.js'
 import './GrampsjsChatPrompt.js'
-import './GrampsjsChatMessage.js'
-import {setChatHistory, getChatHistory} from '../api.js'
-import {renderMarkdownLinks} from '../util.js'
-
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -21,32 +19,33 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
           display: flex;
           flex: 1;
           height: 100%;
-          flex-direction: column;
         }
 
-        .outer {
+        .main-area {
           flex: 1;
-          height: 100%;
           display: flex;
           flex-direction: column;
-        }
-
-        .container {
-          flex: 1;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
           overflow: hidden;
-          clear: left;
+          min-width: 0;
         }
 
-        .conversation {
-          flex: 1;
-          overflow-y: auto;
+        .header {
           display: flex;
-          flex-direction: column-reverse;
-          padding: 0 10px 20px 10px;
+          align-items: center;
+          padding: 8px 12px;
+          border-bottom: 1px solid var(--grampsjs-color-shade-220);
+          flex-shrink: 0;
+        }
+
+        .header-title {
+          font-size: 18px;
+          font-weight: 450;
+          flex: 1;
+        }
+
+        .menu-btn {
+          display: none;
+          --md-icon-button-icon-size: 22px;
         }
 
         .prompt {
@@ -54,47 +53,11 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
           flex-shrink: 0;
         }
 
-        .loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 24px;
-          width: 48px;
-          font-size: 24px;
-        }
-
-        .dot {
-          width: 8px;
-          height: 8px;
-          margin: 0 4px;
-          background-color: var(--grampsjs-body-font-color-50);
-          border-radius: 50%;
-          animation: flash 1.4s infinite ease-in-out both;
-        }
-
-        .dot:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-
-        .dot:nth-child(2) {
-          animation-delay: -0.16s;
-        }
-
-        @keyframes flash {
-          0%,
-          80%,
-          100% {
-            opacity: 0;
+        @media (max-width: 768px) {
+          .menu-btn {
+            display: inline-flex;
+            margin-right: 8px;
           }
-          40% {
-            opacity: 1;
-          }
-        }
-
-        .clear-btn {
-          position: relative;
-          top: 20px;
-          left: 0px;
         }
       `,
     ]
@@ -102,164 +65,179 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
 
   static get properties() {
     return {
+      conversations: {type: Array},
+      activeConversationId: {type: String},
       messages: {type: Array},
       loading: {type: Boolean},
+      _sidebarOpen: {type: Boolean},
     }
   }
 
   constructor() {
     super()
-    this.messages = getChatHistory() || []
+    this.conversations = []
+    this.activeConversationId = null
+    this.messages = []
     this.loading = false
+    this._sidebarOpen = false
   }
 
   render() {
     return html`
-        <div class="outer">
-          <div class="clear-btn">
-            <mwc-button
-              raised
-              label="${this._('New')}"
-              icon="clear_all"
-              @click="${this._handleClear}"
-              ?disabled=${this.messages.length === 0}
-            ></mwc-button>
-          </div>
-          <div class="container">
-            <div class="conversation">
-              ${
-                this.loading
-                  ? html` <grampsjs-chat-message
-                      type="ai"
-                      .appState="${this.appState}"
-                    >
-                      <div class="loading" slot="no-wrap">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div></div
-                    ></grampsjs-chat-message>`
-                  : ''
-              }
-              ${this.messages
-                .toReversed()
-                .map(
-                  message => html`
-                    <grampsjs-chat-message
-                      type="${message.role}"
-                      .appState="${this.appState}"
-                      >${renderMarkdownLinks(
-                        message.message
-                      )}</grampsjs-chat-message
-                    >
-                  `
-                )}
-            </div>
-            <div class="prompt">
-              <grampsjs-chat-prompt
-                ?loading="${this.loading}"
-                @chat:prompt="${this._handlePrompt}"
-                .appState="${this.appState}"
-              ></grampsjs-chat-prompt>
-            </div>
-          </div>
+      <grampsjs-chat-sidebar
+        .appState="${this.appState}"
+        .conversations="${this.conversations}"
+        .activeConversationId="${this.activeConversationId}"
+        ?open="${this._sidebarOpen}"
+        @chat:new-conversation="${this._handleNewConversation}"
+        @chat:select-conversation="${this._handleSelectConversation}"
+        @chat:delete-conversation="${this._handleDeleteConversation}"
+      ></grampsjs-chat-sidebar>
+      <div class="main-area">
+        <div class="header">
+          <md-icon-button
+            class="menu-btn"
+            @click="${() => {
+              this._sidebarOpen = !this._sidebarOpen
+            }}"
+          >
+            <md-icon
+              >${renderIconSvg(
+                mdiMenu,
+                'var(--grampsjs-body-font-color)'
+              )}</md-icon
+            >
+          </md-icon-button>
+          <span class="header-title">${this._('Chat')}</span>
+        </div>
+        <grampsjs-chat-messages
+          .appState="${this.appState}"
+          .messages="${this.messages}"
+          ?loading="${this.loading}"
+        ></grampsjs-chat-messages>
+        <div class="prompt">
+          <grampsjs-chat-prompt
+            ?loading="${this.loading}"
+            @chat:prompt="${this._handlePrompt}"
+            .appState="${this.appState}"
+          ></grampsjs-chat-prompt>
         </div>
       </div>
     `
   }
 
-  async _addMessage(message, maxLength) {
-    if (!message.message) {
-      return
-    }
-    const {messages} = this
+  connectedCallback() {
+    super.connectedCallback()
+    this._fetchConversations()
+  }
 
-    if (message.role === 'ai') {
-      // for AI messages, we display the message word by word
-      // to simulate streaming response (which it's not, but
-      // users may be used to it.)
-      const words = message.message.split(' ')
-      const nWords = words.length
-      for (let end = 1; end <= nWords; end += 1) {
-        this.messages = [
-          ...messages.slice(-(maxLength - 1)),
-          {role: 'ai', message: words.slice(0, end).join(' ')},
-        ]
-        // eslint-disable-next-line no-await-in-loop
-        await delay(Math.ceil(1000 / nWords))
-      }
-    } else {
-      this.messages = [...messages.slice(-(maxLength - 1)), message]
+  async _fetchConversations() {
+    const data = await this.appState.apiGet(
+      '/api/conversations/?page=1&pagesize=50'
+    )
+    if (data?.data && Array.isArray(data.data)) {
+      this.conversations = data.data
+    } else if (Array.isArray(data)) {
+      this.conversations = data
+    }
+  }
+
+  async _handleSelectConversation(e) {
+    const {id} = e.detail
+    if (id === this.activeConversationId) return
+
+    this.activeConversationId = id
+    this.messages = []
+    this.loading = true
+
+    const data = await this.appState.apiGet(`/api/conversations/${id}/`)
+    this.loading = false
+
+    if (data?.data?.messages) {
+      this.messages = data.data.messages.map(msg => ({
+        role: msg.role === 'model' ? 'ai' : msg.role,
+        content: msg.content,
+      }))
+    } else if (data?.messages) {
+      this.messages = data.messages.map(msg => ({
+        role: msg.role === 'model' ? 'ai' : msg.role,
+        content: msg.content,
+      }))
+    }
+  }
+
+  _handleNewConversation() {
+    this.activeConversationId = null
+    this.messages = []
+    this._sidebarOpen = false
+    this._focusInput()
+  }
+
+  async _handleDeleteConversation(e) {
+    const {id} = e.detail
+    await this.appState.apiDelete(`/api/conversations/${id}/`)
+
+    this.conversations = this.conversations.filter(c => c.id !== id)
+
+    if (this.activeConversationId === id) {
+      this.activeConversationId = null
+      this.messages = []
     }
   }
 
   _handlePrompt(event) {
-    const message = {
-      role: 'human',
-      message: event.detail.message,
-    }
-    this._addMessage(message, 7)
-    setChatHistory(this.messages)
-    this._generateResponse()
+    const userContent = event.detail.message
+    this.messages = [...this.messages, {role: 'human', content: userContent}]
+    this._generateResponse(userContent)
   }
 
-  async _generateResponse() {
+  async _generateResponse(query) {
     this.loading = true
-    const payload = {
-      query: this.messages[this.messages.length - 1].message,
+
+    const payload = {query}
+    if (this.activeConversationId) {
+      payload.conversation_id = this.activeConversationId
     }
-    if (this.messages.length > 1) {
-      payload.history = this.messages.slice(0, this.messages.length - 1)
-    }
+
     const data = await this.appState.apiPost('/api/chat/', payload, {
       dbChanged: false,
     })
-    let message
-    if ('error' in data || !data?.data?.response) {
-      message = {
-        role: 'error',
-        message: this._(data.error),
-      }
-    } else {
-      message = {
-        role: 'ai',
-        message: data.data.response,
-      }
-    }
 
     this.loading = false
-    await this._addMessage(message, 6)
-    setChatHistory(this.messages)
-  }
 
-  _handleClear() {
-    this.messages = []
-    setChatHistory(this.messages)
-  }
-
-  _scrollToLastMessage() {
-    const conversationDiv = this.renderRoot.querySelector('.conversation')
-    if (conversationDiv != null) {
-      conversationDiv.scrollTop = conversationDiv.scrollHeight
+    if ('error' in data || !data?.data?.response) {
+      this.messages = [
+        ...this.messages,
+        {role: 'error', content: this._(data.error || 'An error occurred')},
+      ]
+      return
     }
+
+    this.messages = [
+      ...this.messages,
+      {role: 'ai', content: data.data.response},
+    ]
+
+    // Update conversation ID from response (new conversation case)
+    if (data.data.conversation_id) {
+      this.activeConversationId = data.data.conversation_id
+    }
+
+    // Refresh sidebar to show new/updated conversation
+    this._fetchConversations()
   }
 
   focusInput(retry = true) {
+    this._focusInput(retry)
+  }
+
+  _focusInput(retry = true) {
     const ele = this.renderRoot.querySelector('grampsjs-chat-prompt')
     if (ele !== null) {
       ele.focusInput()
     } else if (retry) {
-      setTimeout(() => this.focusInput(false), 500)
+      setTimeout(() => this._focusInput(false), 500)
     }
-    this._scrollToLastMessage()
-  }
-
-  _handleStorage() {
-    this.messages = getChatHistory()
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    window.addEventListener('storage', event => this._handleStorage(event))
   }
 }
 
