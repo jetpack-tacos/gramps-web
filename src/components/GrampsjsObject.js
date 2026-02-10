@@ -411,6 +411,8 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
 
       <div style="clear:left;"></div>
 
+      ${this.renderInsights()}
+
       <div class="tags">${this.renderTags()}</div>
 
       <div class="content-wrapper">
@@ -485,6 +487,10 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
         objectEndpoint="${this._objectEndpoint}"
       ></grampsjs-breadcrumbs>
     `
+  }
+
+  renderInsights() {
+    return html``
   }
 
   renderPicture() {

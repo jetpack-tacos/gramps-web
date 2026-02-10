@@ -7,6 +7,7 @@ import './GrampsJsImage.js'
 import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
+import './GrampsjsPersonInsights.js'
 import {fireEvent} from '../util.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
@@ -44,6 +45,18 @@ export class GrampsjsPerson extends GrampsjsObject {
         ${this._renderTreeBtn()} ${this._renderDnaBtn()}
         ${this._renderExternalSearchBtn()}
       </p>
+    `
+  }
+
+  renderInsights() {
+    if (!this.canUseChat || !this.data?.gramps_id) {
+      return html``
+    }
+    return html`
+      <grampsjs-person-insights
+        .grampsId="${this.data.gramps_id}"
+        .appState="${this.appState}"
+      ></grampsjs-person-insights>
     `
   }
 
