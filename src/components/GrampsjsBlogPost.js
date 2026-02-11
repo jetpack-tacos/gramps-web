@@ -4,9 +4,9 @@ import '@material/mwc-button'
 
 import './GrampsJsImage.js'
 import './GrampsjsGallery.js'
-import './GrampsjsNoteContent.js'
 import './GrampsjsTimedelta.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import {renderMarkdownLinks} from '../util.js'
 
 export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -53,10 +53,23 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
           max-width: 40em;
         }
 
-        grampsjs-note-content {
-          --grampsjs-note-line-height: 1.7em;
-          --grampsjs-note-font-size: 18px;
-          --grampsjs-note-font-family: 'EB Garamond x';
+        .blog-body {
+          line-height: 1.7em;
+          font-size: 18px;
+        }
+
+        .blog-body p {
+          margin-bottom: 1em;
+        }
+
+        .blog-body a {
+          color: var(--md-sys-color-primary, #6750a4);
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .blog-body a:hover {
+          text-decoration: underline;
         }
 
         #btn-details {
@@ -69,8 +82,8 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
             padding-bottom: 0.3em;
           }
 
-          grampsjs-note-content {
-            --grampsjs-note-font-size: 23px;
+          .blog-body {
+            font-size: 23px;
           }
         }
       `,
@@ -111,14 +124,7 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
         </div>
         <div id="note">
           <div id="note-wrapper">
-            <grampsjs-note-content
-              ?framed="${1 === 2}"
-              grampsId="${this.note.grampsId}"
-              content="${this.note?.formatted?.html ||
-              this.note?.text?.string ||
-              'Error loading note'}"
-            >
-            </grampsjs-note-content>
+            <div class="blog-body">${this._renderBlogContent()}</div>
 
             ${this.source?.media_list?.length > 1
               ? html`
@@ -139,6 +145,16 @@ export class GrampsjsBlogPost extends GrampsjsAppStateMixin(LitElement) {
         </div>
       </div>
     `
+  }
+
+  _renderBlogContent() {
+    const text = this.note?.text?.string || this.note?.formatted?.html || ''
+    if (!text) {
+      return html``
+    }
+    // Split on double newlines for paragraphs, render markdown links in each
+    const paragraphs = text.split(/\n\n+/).filter(p => p.trim())
+    return paragraphs.map(p => html`<p>${renderMarkdownLinks(p.trim())}</p>`)
   }
 
   _clickDetails(grampsId) {

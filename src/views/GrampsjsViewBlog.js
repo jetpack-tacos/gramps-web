@@ -133,6 +133,7 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
 
   firstUpdated() {
     this._fetchData()
+    this._checkAndGenerateBlog()
   }
 
   _handlePreviewClick(grampsId) {
@@ -171,6 +172,31 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
     })
     this.loading = false
     this._firstLoaded = true
+  }
+
+  async _checkAndGenerateBlog() {
+    // Only check if user has chat permissions
+    if (!this.appState.permissions?.canUseChat) {
+      return
+    }
+
+    try {
+      // Check if we should generate a new blog post (default: weekly)
+      const checkData = await this.appState.apiGet('/api/blog/check/?days=7')
+      if (checkData?.data?.should_generate) {
+        // Auto-generate in the background
+        console.log('Auto-generating new blog post...')
+        await this.appState.apiPost('/api/blog/generate/')
+        // Refresh the blog list
+        this._fetchData()
+        fireEvent(this, 'grampsjs:notification', {
+          message: this._('A new blog post has been generated!'),
+        })
+      }
+    } catch (err) {
+      // Silently fail - don't interrupt the user experience
+      console.log('Blog auto-generation check failed:', err)
+    }
   }
 }
 

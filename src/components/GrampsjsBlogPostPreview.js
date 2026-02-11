@@ -4,9 +4,9 @@ import '@material/mwc-button'
 
 import './GrampsJsImage.js'
 import './GrampsjsGallery.js'
-import './GrampsjsNoteContent.js'
 import './GrampsjsTimedelta.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import {renderMarkdownLinks} from '../util.js'
 
 export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -36,6 +36,15 @@ export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
           font-weight: 300;
           color: var(--grampsjs-body-font-color-70);
           line-height: 1.45em;
+        }
+
+        #note a {
+          color: var(--md-sys-color-primary, #6750a4);
+          text-decoration: none;
+        }
+
+        #note a:hover {
+          text-decoration: underline;
         }
 
         #date {
@@ -105,10 +114,8 @@ export class GrampsjsBlogPostPreview extends GrampsjsAppStateMixin(LitElement) {
     }
     const re = /[\s\S]{250}[^\s]{0,50}\s?/g
     const match = all.match(re)
-    if (match === null) {
-      return all
-    }
-    return `${match[0]} ...`
+    const text = match === null ? all : `${match[0]} ...`
+    return renderMarkdownLinks(text)
   }
 
   _renderImage() {
