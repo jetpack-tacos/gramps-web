@@ -13,7 +13,7 @@ export class GrampsjsViewEvents extends GrampsjsViewObjectsBase {
   constructor() {
     super()
     this._columns = {
-      grampsId: {title: 'Gramps ID', sort: 'gramps_id'},
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
       type: {title: 'Event Type', sort: 'type'},
       date: {title: 'Date', sort: 'date'},
       place: {title: 'Place', sort: 'place'},

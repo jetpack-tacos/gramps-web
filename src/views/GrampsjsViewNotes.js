@@ -11,7 +11,7 @@ export class GrampsjsViewNotes extends GrampsjsViewObjectsBase {
   constructor() {
     super()
     this._columns = {
-      grampsId: {title: 'Gramps ID', sort: 'gramps_id'},
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
       type: {title: 'Type', sort: 'type'},
       text: {title: 'Text', sort: 'text'},
       change: {title: 'Last changed', sort: 'change'},

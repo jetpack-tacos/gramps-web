@@ -1,11 +1,11 @@
 {
-  "name": "Gramps",
-  "short_name": "Gramps",
+  "name": "GenAI",
+  "short_name": "GenAI",
   "lang": "en",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#6D4C41",
-  "background_color" : "#fff",
+  "theme_color": "#1565C0",
+  "background_color": "#fff",
   "icons": [
     {
       "src": "images/icon192.png",

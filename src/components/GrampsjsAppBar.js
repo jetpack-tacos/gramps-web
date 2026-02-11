@@ -2,8 +2,8 @@
 The dropdown menu for adding objects in the top app bar
 */
 
-import {html, css, LitElement} from 'lit'
-import {classMap} from 'lit/directives/class-map.js'
+import { html, css, LitElement } from 'lit'
+import { classMap } from 'lit/directives/class-map.js'
 import '@material/mwc-top-app-bar'
 import '@material/mwc-icon-button'
 import '@material/mwc-icon'
@@ -13,9 +13,9 @@ import './GrampsjsAddMenu.js'
 import './GrampsjsSettingsMenu.js'
 import './GrampsjsTooltip.js'
 
-import {fireEvent} from '../util.js'
-import {sharedStyles} from '../SharedStyles.js'
-import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import { fireEvent } from '../util.js'
+import { sharedStyles } from '../SharedStyles.js'
+import { GrampsjsAppStateMixin } from '../mixins/GrampsjsAppStateMixin.js'
 
 class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -42,10 +42,10 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   static get properties() {
     return {
-      editMode: {type: Boolean},
-      editTitle: {type: String},
-      editDialogContent: {type: String},
-      saveButton: {type: Boolean},
+      editMode: { type: Boolean },
+      editTitle: { type: String },
+      editDialogContent: { type: String },
+      saveButton: { type: Boolean },
     }
   }
 
@@ -59,9 +59,9 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-      <mwc-top-app-bar class="${classMap({edit: this.editMode})}">
+      <mwc-top-app-bar class="${classMap({ edit: this.editMode })}">
         ${this.editMode
-          ? html`<mwc-icon-button
+        ? html`<mwc-icon-button
                 slot="navigationIcon"
                 icon="close"
                 id="button-close"
@@ -70,22 +70,22 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
               <grampsjs-tooltip for="button-close" .appState="${this.appState}"
                 >${this._('Stop editing')}</grampsjs-tooltip
               > `
-          : html`<mwc-icon-button
+        : html`<mwc-icon-button
               slot="navigationIcon"
               icon="menu"
               @click="${this._toggleDrawer}"
             ></mwc-icon-button>`}
         <div id="app-title" slot="title">
           ${this.editMode && this.editTitle
-            ? this.editTitle
-            : this._dbInfo?.database?.name || 'Gramps Web'}
+        ? this.editTitle
+        : this._dbInfo?.database?.name || 'GenAI'}
         </div>
         ${
-          // eslint-disable-next-line no-nested-ternary
-          this.editMode
-            ? html`
+      // eslint-disable-next-line no-nested-ternary
+      this.editMode
+        ? html`
                 ${this.saveButton
-                  ? html`
+            ? html`
                       <mwc-icon-button
                         icon="save"
                         slot="actionItems"
@@ -98,7 +98,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                         >${this._('_Save')}</grampsjs-tooltip
                       >
                     `
-                  : ''}
+            : ''}
                 <mwc-icon-button
                   icon="delete"
                   slot="actionItems"
@@ -111,9 +111,9 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                   >${this._('_Delete')}</grampsjs-tooltip
                 >
               `
-            : html`
+        : html`
                 ${this.appState.permissions.canAdd
-                  ? html`
+            ? html`
                       <grampsjs-add-menu
                         slot="actionItems"
                         .appState="${this.appState}"
@@ -125,7 +125,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                         >${this._('Add')}</grampsjs-tooltip
                       >
                     `
-                  : ''}
+            : ''}
                 <grampsjs-settings-menu
                   slot="actionItems"
                   .appState="${this.appState}"
@@ -148,7 +148,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
                   >${this._('Search')}</grampsjs-tooltip
                 >
               `
-        }
+      }
       </mwc-top-app-bar>
       ${this.editDialogContent}
     `
@@ -159,7 +159,7 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _handleNav(path) {
-    fireEvent(this, 'nav', {path})
+    fireEvent(this, 'nav', { path })
   }
 
   _handleCloseRequest() {

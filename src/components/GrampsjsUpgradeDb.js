@@ -51,7 +51,7 @@ class GrampsjsUpgradeDb extends GrampsjsAppStateMixin(LitElement) {
     return html`<div class="center-xy">
       <div>
         ${this._(
-          'The Family Tree you are trying to load is in a schema version not supported by this version of Gramps Web. Therefore you cannot load this Family Tree until the tree administrator has upgraded its schema.'
+          'The Family Tree you are trying to load is in a schema version not supported by this version of GenAI. Therefore you cannot load this Family Tree until the tree administrator has upgraded its schema.'
         )}<br /><br />
         ${renderLogoutButton(this.appState)}
       </div>
@@ -62,7 +62,7 @@ class GrampsjsUpgradeDb extends GrampsjsAppStateMixin(LitElement) {
     return html`<div class="center-xy">
       <div>
         ${this._(
-          'The Family Tree you are trying to load is in a schema version not supported by this version of Gramps Web. Therefore you cannot load this Family Tree without upgrading its schema. This action cannot be undone.'
+          'The Family Tree you are trying to load is in a schema version not supported by this version of GenAI. Therefore you cannot load this Family Tree without upgrading its schema. This action cannot be undone.'
         )}<br /><br />
         <mwc-button
           raised

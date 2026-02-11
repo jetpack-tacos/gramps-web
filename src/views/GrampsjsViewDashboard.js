@@ -9,6 +9,8 @@ import './GrampsjsViewRecentBlogPosts.js'
 import './GrampsjsViewAnniversaries.js'
 import '../components/GrampsjsHomePerson.js'
 import '../components/GrampsjsStatistics.js'
+import '../components/GrampsjsInterestingNuggets.js'
+import '../components/GrampsjsThisDay.js'
 
 export class GrampsjsViewDashboard extends GrampsjsView {
   static get properties() {
@@ -119,6 +121,24 @@ export class GrampsjsViewDashboard extends GrampsjsView {
         </div>
       </div>
       <div class="column">
+        ${this.appState.permissions?.canUseChat
+          ? html`
+              <div>
+                <grampsjs-this-day
+                  id="this-day"
+                  .appState="${this.appState}"
+                >
+                </grampsjs-this-day>
+              </div>
+              <div>
+                <grampsjs-interesting-nuggets
+                  id="interesting-nuggets"
+                  .appState="${this.appState}"
+                >
+                </grampsjs-interesting-nuggets>
+              </div>
+            `
+          : ''}
         <div>
           <grampsjs-view-recent-blog-posts
             id="recent-blog"

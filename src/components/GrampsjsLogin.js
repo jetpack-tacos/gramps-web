@@ -1,5 +1,5 @@
 /* eslint-disable lit-a11y/click-events-have-key-events */
-import {html, css, LitElement} from 'lit'
+import { html, css, LitElement } from 'lit'
 
 import '@material/mwc-icon'
 import '@material/mwc-textfield'
@@ -9,15 +9,15 @@ import '@material/web/button/outlined-button'
 
 import './GrampsjsPasswordManagerPolyfill.js'
 import './GrampsjsOidcButton.js'
-import {sharedStyles} from '../SharedStyles.js'
+import { sharedStyles } from '../SharedStyles.js'
 import {
   apiGetTokens,
   apiResetPassword,
   apiGetOIDCConfig,
   apiOIDCLogin,
 } from '../api.js'
-import {fireEvent} from '../util.js'
-import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import { fireEvent } from '../util.js'
+import { GrampsjsAppStateMixin } from '../mixins/GrampsjsAppStateMixin.js'
 
 class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -131,11 +131,11 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
 
   static get properties() {
     return {
-      resetpw: {type: Boolean},
-      isFormValid: {type: Boolean},
-      credentials: {type: Object},
-      tree: {type: String},
-      oidcConfig: {type: Object},
+      resetpw: { type: Boolean },
+      isFormValid: { type: Boolean },
+      credentials: { type: Object },
+      tree: { type: String },
+      oidcConfig: { type: Object },
     }
   }
 
@@ -182,10 +182,10 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
     return html`
       <div id="login-container">
         <form id="login-form" @keydown="${this._handleLoginKey}">
-          <h2>${this._('Log in to Gramps Web')}</h2>
+          <h2>${this._('Log in to GenAI')}</h2>
           ${localAuthDisabled
-            ? ''
-            : html`
+        ? ''
+        : html`
                 <md-outlined-text-field
                   id="username"
                   label="${this._('Username')}"
@@ -203,8 +203,8 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
                 ></md-outlined-text-field>
                 <div class="button-container">
                   ${window.grampsjsConfig.hideRegisterLink
-                    ? ''
-                    : html`
+            ? ''
+            : html`
                         <md-outlined-button
                           @click="${() => this._handleNav('register')}"
                         >
@@ -227,33 +227,33 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
                   <span
                     class="link"
                     @click="${() => {
-                      this.resetpw = true
-                    }}"
+            this.resetpw = true
+          }}"
                     >${this._('Lost password?')}</span
                   >
                 </p>
               `}
           ${this.oidcConfig?.enabled &&
-          this.oidcConfig?.providers &&
-          !localAuthDisabled
-            ? html`<hr />`
-            : ''}
+        this.oidcConfig?.providers &&
+        !localAuthDisabled
+        ? html`<hr />`
+        : ''}
           ${this.oidcConfig?.enabled && this.oidcConfig?.providers
-            ? this.oidcConfig.providers.map(
-                provider => html`
+        ? this.oidcConfig.providers.map(
+          provider => html`
                   <grampsjs-oidc-button
                     .provider="${provider.id}"
                     .providerName="${provider.name}"
                     .onClick="${() => this._submitOIDCLogin(provider.id)}"
                     .buttonText="${this._getOIDCButtonText(
-                      provider.id,
-                      provider.name
-                    )}"
+            provider.id,
+            provider.name
+          )}"
                     .signingInText="${this._('Signing in...')}"
                   ></grampsjs-oidc-button>
                 `
-              )
-            : ''}
+        )
+        : ''}
         </form>
         <grampsjs-password-manager-polyfill
           .credentials=${this.credentials}
@@ -274,7 +274,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _handleNav(path) {
-    fireEvent(this, 'nav', {path})
+    fireEvent(this, 'nav', { path })
   }
 
   _getOIDCButtonText(providerId, providerName) {
@@ -282,7 +282,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _credChanged(e) {
-    this.credentials = {...this.credentials, [e.target.id]: e.target.value}
+    this.credentials = { ...this.credentials, [e.target.id]: e.target.value }
   }
 
   _renderResetPw() {
@@ -312,8 +312,8 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
             <span
               class="link"
               @click="${() => {
-                this.resetpw = false
-              }}"
+        this.resetpw = false
+      }}"
               >${this._('_Back')}</span
             >
           </p>
@@ -366,7 +366,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _loginFormChanged(ev) {
-    this.credentials = {...this.credentials, ...ev.detail.value}
+    this.credentials = { ...this.credentials, ...ev.detail.value }
   }
 
   async _resetPw(e) {
@@ -390,7 +390,7 @@ class GrampsjsLogin extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _showError(message) {
-    fireEvent(this, 'grampsjs:error', {message})
+    fireEvent(this, 'grampsjs:error', { message })
   }
 }
 

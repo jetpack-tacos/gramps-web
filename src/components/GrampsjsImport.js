@@ -152,7 +152,7 @@ export class GrampsjsImport extends GrampsjsAppStateMixin(LitElement) {
     if (ext !== 'gramps') {
       this._uploadHint = html`<p class="alert warn">
         ${this._(
-          'If you intend to synchronize an existing Gramps database with Gramps Web, use the Gramps XML (.gramps) format instead.'
+          'If you intend to synchronize an existing GenAI database with Gramps Web, use the GenAI XML (.gramps) format instead.'
         )}
       </p>`
     } else {

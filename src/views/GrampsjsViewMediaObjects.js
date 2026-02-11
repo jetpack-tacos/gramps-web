@@ -48,7 +48,7 @@ export class GrampsjsViewMediaObjects extends GrampsjsViewObjectsBase {
   constructor() {
     super()
     this._columns = {
-      grampsId: {title: 'Gramps ID', sort: 'gramps_id'},
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
       mime: {title: 'Type', sort: 'mime'},
       desc: {title: 'Description', sort: 'title'},
       change: {title: 'Last changed', sort: 'change'},

@@ -9,7 +9,7 @@ export class GrampsjsViewRepositories extends GrampsjsViewObjectsBase {
   constructor() {
     super()
     this._columns = {
-      grampsId: {title: 'Gramps ID', sort: 'gramps_id'},
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
       name: {title: 'Name', sort: 'name'},
       type: {title: 'Type', sort: 'type'},
       change: {title: 'Last changed', sort: 'change'},

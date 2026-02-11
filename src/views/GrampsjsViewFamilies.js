@@ -12,7 +12,7 @@ export class GrampsjsViewFamilies extends GrampsjsViewObjectsBase {
   constructor() {
     super()
     this._columns = {
-      grampsId: {title: 'Gramps ID', sort: 'gramps_id'},
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
       father: {title: 'Father', sort: 'surname'},
       mother: {title: 'Mother', sort: ''},
       change: {title: 'Last changed', sort: 'change'},

@@ -1,9 +1,17 @@
-import {fromRollup} from '@web/dev-server-rollup'
+import { fromRollup } from '@web/dev-server-rollup'
 import rollupReplace from '@rollup/plugin-replace'
+import proxy from 'koa-proxies'
 
 const replace = fromRollup(rollupReplace)
 
 export default {
+  port: 8001,
+  middleware: [
+    proxy('/api', {
+      target: 'http://localhost:5000',
+      changeOrigin: true,
+    }),
+  ],
   plugins: [
     replace({
       include: [

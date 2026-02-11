@@ -387,7 +387,7 @@ export const grampsStrings = [
   'Godfather',
   'Godparent',
   'Graduation',
-  'Gramps ID',
+  'GenAI ID',
   'Graphviz can create very large graphs by spreading the graph across a rectangular array of pages. This controls the number pages in the array horizontally. Only valid for dot and pdf via Ghostscript.',
   'Graphviz can create very large graphs by spreading the graph across a rectangular array of pages. This controls the number pages in the array vertically. Only valid for dot and pdf via Ghostscript.',
   'Greek',
