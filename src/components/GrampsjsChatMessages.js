@@ -103,27 +103,6 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           text-align: center;
         }
 
-        .message-content {
-          min-width: 0;
-        }
-
-        .message-content > :first-child {
-          margin-top: 0;
-        }
-
-        .message-content > :last-child {
-          margin-bottom: 0;
-        }
-
-        .message-content p {
-          margin: 0 0 0.65em;
-        }
-
-        .message-content p:last-of-type {
-          display: inline;
-          margin-bottom: 0;
-        }
-
         .share-button {
           border: 1px solid var(--grampsjs-color-shade-180);
           background: var(--grampsjs-color-shade-235);
@@ -185,29 +164,25 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
                 class="${i === this.messages.length - 1 ? 'fade-in' : ''}"
                 type="${message.role}"
                 .appState="${this.appState}"
+                >${message.role === 'ai'
+                  ? html`${renderMarkdownLinks(
+                        message.content || message.message || ''
+                      )}<button
+                        class="share-button"
+                        type="button"
+                        aria-label="${this._('Share')}"
+                        title="${this._('Share')}"
+                        ?disabled="${this._sharingIndex === i}"
+                        @click=${() => this._shareMessage(message, i)}
+                      >
+                        ${this._sharingIndex === i
+                          ? this._('Sharing...')
+                          : this._('Share')}
+                      </button>`
+                  : renderMarkdownLinks(
+                      message.content || message.message || ''
+                    )}</grampsjs-chat-message
               >
-                <div class="message-content">
-                  ${renderMarkdownLinks(
-                    message.content || message.message || ''
-                  )}
-                  ${message.role === 'ai'
-                    ? html`
-                        <button
-                          class="share-button"
-                          type="button"
-                          aria-label="${this._('Share')}"
-                          title="${this._('Share')}"
-                          ?disabled="${this._sharingIndex === i}"
-                          @click=${() => this._shareMessage(message, i)}
-                        >
-                          ${this._sharingIndex === i
-                            ? this._('Sharing...')
-                            : this._('Share')}
-                        </button>
-                      `
-                    : ''}
-                </div>
-              </grampsjs-chat-message>
             `
           )}
           ${this.loading
