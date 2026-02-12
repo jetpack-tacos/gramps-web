@@ -195,6 +195,14 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         <mwc-icon slot="graphic">checklist</mwc-icon>
       </grampsjs-list-item>
       <grampsjs-list-item
+        href="${BASE_DIR}/data-quality"
+        graphic="icon"
+        ?selected="${this.appState.path.page === 'data-quality'}"
+      >
+        <span>${this._('Data Quality')}</span>
+        <mwc-icon slot="graphic">query_stats</mwc-icon>
+      </grampsjs-list-item>
+      <grampsjs-list-item
         href="${BASE_DIR}/export"
         graphic="icon"
         ?selected="${this.appState.path.page === 'export'}"

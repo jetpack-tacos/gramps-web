@@ -26,6 +26,7 @@ import '../views/GrampsjsViewEvent.js'
 import '../views/GrampsjsViewSource.js'
 import '../views/GrampsjsViewTask.js'
 import '../views/GrampsjsViewTasks.js'
+import '../views/GrampsjsViewDataQuality.js'
 import '../views/GrampsjsViewBlog.js'
 import '../views/GrampsjsViewBlogPost.js'
 import '../views/GrampsjsViewCitation.js'
@@ -294,6 +295,11 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
         ?active=${this.appState.path.page === 'tasks'}
         .appState="${this.appState}"
       ></grampsjs-view-tasks>
+      <grampsjs-view-data-quality
+        class="page"
+        ?active=${this.appState.path.page === 'data-quality'}
+        .appState="${this.appState}"
+      ></grampsjs-view-data-quality>
       <grampsjs-view-settings-user
         class="page"
         ?active=${this.appState.path.page === 'settings' &&
