@@ -7,7 +7,7 @@ import '@material/mwc-list'
 
 import './GrampsJsListItem.js'
 
-import {mdiFamilyTree, mdiChat, mdiDna} from '@mdi/js'
+import {mdiFamilyTree, mdiChat} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderIcon} from '../icons.js'
@@ -123,31 +123,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
           ></mwc-icon
         >
       </grampsjs-list-item>
-      ${this.appState.frontendConfig.hideDNALink
-        ? ''
-        : html`
-            <grampsjs-list-item
-              href="${BASE_DIR}/dna-matches"
-              graphic="icon"
-              ?selected="${['dna-matches', 'dna-chromosome', 'ydna'].includes(
-                this.appState.path.page
-              )}"
-            >
-              <span>${this._('DNA')}</span>
-              <mwc-icon slot="graphic"
-                ><span class="raise"
-                  >${renderIcon(
-                    mdiDna,
-                    ['dna-matches', 'dna-chromosome', 'ydna'].includes(
-                      this.appState.path.page
-                    )
-                      ? selectedColor
-                      : defaultColor
-                  )}</span
-                ></mwc-icon
-              >
-            </grampsjs-list-item>
-          `}
       ${this.canUseChat
         ? html`
             <grampsjs-list-item
@@ -185,14 +160,6 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
       >
         <span>${this._('_Bookmarks')}</span>
         <mwc-icon slot="graphic">bookmark</mwc-icon>
-      </grampsjs-list-item>
-      <grampsjs-list-item
-        href="${BASE_DIR}/tasks"
-        graphic="icon"
-        ?selected="${this.appState.path.page === 'tasks'}"
-      >
-        <span>${this._('Tasks')}</span>
-        <mwc-icon slot="graphic">checklist</mwc-icon>
       </grampsjs-list-item>
       <grampsjs-list-item
         href="${BASE_DIR}/data-quality"
