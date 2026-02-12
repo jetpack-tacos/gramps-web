@@ -1,9 +1,23 @@
 import {html, css, LitElement} from 'lit'
+import '@material/web/button/text-button'
 
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {renderMarkdownLinks} from '../util.js'
+import {renderMarkdownLinks, fireEvent} from '../util.js'
 import './GrampsjsChatMessage.js'
+
+function extractPersonIds(content) {
+  const personIds = []
+  const pattern = /\[[^\]]+\]\(\/person\/([^)/\s]+)\)/g
+  let match
+  // eslint-disable-next-line no-cond-assign
+  while ((match = pattern.exec(content)) !== null) {
+    if (match[1]) {
+      personIds.push(match[1])
+    }
+  }
+  return [...new Set(personIds)]
+}
 
 class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -92,6 +106,16 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           padding: 40px;
           text-align: center;
         }
+
+        .message-actions {
+          margin-top: 8px;
+          display: flex;
+          justify-content: flex-start;
+        }
+
+        .share-button {
+          --md-text-button-label-text-size: 12px;
+        }
       `,
     ]
   }
@@ -100,6 +124,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
     return {
       messages: {type: Array},
       loading: {type: Boolean},
+      _sharingIndex: {state: true},
     }
   }
 
@@ -107,6 +132,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
     super()
     this.messages = []
     this.loading = false
+    this._sharingIndex = -1
   }
 
   render() {
@@ -127,10 +153,28 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
                 class="${i === this.messages.length - 1 ? 'fade-in' : ''}"
                 type="${message.role}"
                 .appState="${this.appState}"
-                >${renderMarkdownLinks(
-                  message.content || message.message || ''
-                )}</grampsjs-chat-message
               >
+                <div>
+                  ${renderMarkdownLinks(
+                    message.content || message.message || ''
+                  )}
+                </div>
+                ${message.role === 'ai'
+                  ? html`
+                      <div class="message-actions">
+                        <md-text-button
+                          class="share-button"
+                          ?disabled=${this._sharingIndex === i}
+                          @click=${() => this._shareMessage(message, i)}
+                        >
+                          ${this._sharingIndex === i
+                            ? this._('Sharing...')
+                            : this._('Share')}
+                        </md-text-button>
+                      </div>
+                    `
+                  : ''}
+              </grampsjs-chat-message>
             `
           )}
           ${this.loading
@@ -160,6 +204,31 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
     const container = this.renderRoot.querySelector('.messages-container')
     if (container) {
       container.scrollTop = 0
+    }
+  }
+
+  async _shareMessage(message, index) {
+    const content = (message.content || message.message || '').trim()
+    if (!content || this._sharingIndex !== -1) {
+      return
+    }
+
+    this._sharingIndex = index
+    try {
+      await this.appState.apiPost('/api/shared/', {
+        content,
+        person_ids: extractPersonIds(content),
+      })
+      fireEvent(this, 'grampsjs:notification', {
+        message: this._('Shared to discovery feed'),
+      })
+    } catch (err) {
+      fireEvent(this, 'grampsjs:notification', {
+        message: this._('Failed to share discovery'),
+        error: true,
+      })
+    } finally {
+      this._sharingIndex = -1
     }
   }
 }

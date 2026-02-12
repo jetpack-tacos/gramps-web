@@ -2,6 +2,7 @@ import {css, html} from 'lit'
 
 import {GrampsjsView} from './GrampsjsView.js'
 import '../components/GrampsjsBlogPostPreview.js'
+import '../components/GrampsjsSharedDiscoveries.js'
 
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 
@@ -68,6 +69,13 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
 
   renderContent() {
     return html`
+      ${this.appState.permissions?.canUseChat
+        ? html`
+            <grampsjs-shared-discoveries
+              .appState="${this.appState}"
+            ></grampsjs-shared-discoveries>
+          `
+        : ''}
       ${this.renderPosts()}
       ${this._totalCount > 0 ? this.renderPagination() : ''}
     `
