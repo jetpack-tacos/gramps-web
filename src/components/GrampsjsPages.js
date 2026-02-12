@@ -29,6 +29,7 @@ import '../views/GrampsjsViewTasks.js'
 import '../views/GrampsjsViewDataQuality.js'
 import '../views/GrampsjsViewBlog.js'
 import '../views/GrampsjsViewBlogPost.js'
+import '../views/GrampsjsViewSharedDiscoveries.js'
 import '../views/GrampsjsViewCitation.js'
 import '../views/GrampsjsViewDashboard.js'
 import '../views/GrampsjsViewRepository.js'
@@ -114,6 +115,11 @@ class GrampsjsPages extends GrampsjsAppStateMixin(LitElement) {
         grampsId="${this.appState.path.pageId}"
         .appState="${this.appState}"
       ></grampsjs-view-blog-post>
+      <grampsjs-view-shared-discoveries
+        class="page"
+        ?active=${this.appState.path.page === 'shared'}
+        .appState="${this.appState}"
+      ></grampsjs-view-shared-discoveries>
 
       <grampsjs-view-people
         class="page"

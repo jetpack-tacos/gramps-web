@@ -1,10 +1,15 @@
 import {html, css, LitElement} from 'lit'
 import '@material/web/button/text-button'
+import '@material/web/icon/icon.js'
+import '@material/web/iconbutton/icon-button.js'
 import '@material/web/progress/circular-progress'
 
 import {sharedStyles} from '../SharedStyles.js'
+import {getTreeId} from '../api.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks} from '../util.js'
+
+const DISMISSED_DISCOVERIES_PREFIX = 'grampsjs_dismissed_shared_discoveries'
 
 export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   LitElement
@@ -54,8 +59,22 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
 
         .meta {
           margin-top: 0.6em;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.6em;
           font-size: 13px;
           color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .shared-by {
+          display: inline-block;
+        }
+
+        .dismiss {
+          --md-icon-button-icon-size: 17px;
+          --md-icon-button-state-layer-height: 30px;
+          --md-icon-button-state-layer-width: 30px;
         }
 
         .loading {
@@ -77,6 +96,7 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   static get properties() {
     return {
       discoveries: {type: Array},
+      dismissedDiscoveryIds: {type: Array},
       loading: {type: Boolean},
       error: {type: String},
     }
@@ -85,12 +105,14 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   constructor() {
     super()
     this.discoveries = []
+    this.dismissedDiscoveryIds = []
     this.loading = false
     this.error = ''
   }
 
   connectedCallback() {
     super.connectedCallback()
+    this._loadDismissedDiscoveries()
     this._loadDiscoveries()
   }
 
@@ -119,7 +141,12 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   }
 
   _renderFeed() {
-    if (!this.discoveries.length) {
+    const visibleDiscoveries = this.discoveries.filter(
+      discovery =>
+        !this.dismissedDiscoveryIds.includes(String(discovery.id || ''))
+    )
+
+    if (!visibleDiscoveries.length) {
       return html`
         <div class="empty">
           ${this._(
@@ -131,15 +158,25 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
 
     return html`
       <div class="feed">
-        ${this.discoveries.map(
+        ${visibleDiscoveries.map(
           discovery => html`
             <div class="item">
               <div class="content">
                 ${renderMarkdownLinks(discovery.content || '')}
               </div>
               <div class="meta">
-                ${this._('Shared by')}
-                ${discovery.shared_by || this._('Unknown user')}
+                <span class="shared-by">
+                  ${this._('Shared by')}
+                  ${discovery.shared_by || this._('Unknown user')}
+                </span>
+                <md-icon-button
+                  class="dismiss"
+                  title="${this._('Dismiss')}"
+                  aria-label="${this._('Dismiss')}"
+                  @click=${() => this._dismissDiscovery(discovery.id)}
+                >
+                  <md-icon>delete</md-icon>
+                </md-icon-button>
               </div>
             </div>
           `
@@ -163,6 +200,41 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
     } finally {
       this.loading = false
     }
+  }
+
+  _dismissDiscovery(id) {
+    const discoveryId = String(id || '')
+    if (!discoveryId || this.dismissedDiscoveryIds.includes(discoveryId)) {
+      return
+    }
+    this.dismissedDiscoveryIds = [...this.dismissedDiscoveryIds, discoveryId]
+    this._saveDismissedDiscoveries()
+  }
+
+  _storageKey() {
+    const treeIdFromState = this.appState?.dbInfo?.database?.path
+    return `${DISMISSED_DISCOVERIES_PREFIX}:${
+      treeIdFromState || getTreeId() || 'unknown'
+    }`
+  }
+
+  _loadDismissedDiscoveries() {
+    try {
+      const raw = localStorage.getItem(this._storageKey())
+      const parsed = JSON.parse(raw || '[]')
+      this.dismissedDiscoveryIds = Array.isArray(parsed)
+        ? parsed.map(id => String(id))
+        : []
+    } catch {
+      this.dismissedDiscoveryIds = []
+    }
+  }
+
+  _saveDismissedDiscoveries() {
+    localStorage.setItem(
+      this._storageKey(),
+      JSON.stringify(this.dismissedDiscoveryIds)
+    )
   }
 }
 

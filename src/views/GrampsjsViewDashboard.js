@@ -11,7 +11,6 @@ import '../components/GrampsjsHomePerson.js'
 import '../components/GrampsjsStatistics.js'
 import '../components/GrampsjsInterestingNuggets.js'
 import '../components/GrampsjsThisDay.js'
-import '../components/GrampsjsSharedDiscoveries.js'
 
 export class GrampsjsViewDashboard extends GrampsjsView {
   static get properties() {
@@ -134,13 +133,6 @@ export class GrampsjsViewDashboard extends GrampsjsView {
                   .appState="${this.appState}"
                 >
                 </grampsjs-interesting-nuggets>
-              </div>
-              <div>
-                <grampsjs-shared-discoveries
-                  id="shared-discoveries"
-                  .appState="${this.appState}"
-                >
-                </grampsjs-shared-discoveries>
               </div>
             `
           : ''}

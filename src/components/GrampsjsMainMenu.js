@@ -82,6 +82,18 @@ class GrampsjsAppBar extends GrampsjsAppStateMixin(LitElement) {
         <span>${this._('Blog')}</span>
         <mwc-icon slot="graphic">rss_feed</mwc-icon>
       </grampsjs-list-item>
+      ${this.canUseChat
+        ? html`
+            <grampsjs-list-item
+              href="${BASE_DIR}/shared"
+              graphic="icon"
+              ?selected="${this.appState.path.page === 'shared'}"
+            >
+              <span>${this._('Shared')}</span>
+              <mwc-icon slot="graphic">share</mwc-icon>
+            </grampsjs-list-item>
+          `
+        : ''}
       <grampsjs-list-item
         href="${BASE_DIR}/people"
         graphic="icon"
