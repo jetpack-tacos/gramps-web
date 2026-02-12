@@ -13,9 +13,9 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
       sharedStyles,
       css`
         .container {
-          margin: 15px 0;
+          margin: 12px 0;
           font-size: 16px;
-          line-height: 26px;
+          line-height: 24px;
           font-weight: 340;
           clear: right;
           max-width: 90%;
@@ -26,8 +26,8 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
         .container.human {
           background-color: var(--grampsjs-color-shade-230);
           color: var(--grampsjs-body-font-color);
-          padding: 10px 20px;
-          border-radius: 16px;
+          padding: 7px 12px;
+          border-radius: 14px;
           float: right;
           max-width: 70%;
           margin-right: 10px;
@@ -46,6 +46,14 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
           white-space: pre-wrap;
           flex-grow: 1;
           overflow: hidden;
+        }
+
+        .slot-wrap > :first-child {
+          margin-top: 0;
+        }
+
+        .slot-wrap > :last-child {
+          margin-bottom: 0;
         }
 
         .avatar {

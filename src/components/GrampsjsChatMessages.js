@@ -1,6 +1,4 @@
 import {html, css, LitElement} from 'lit'
-import '@material/web/button/text-button'
-
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks, fireEvent} from '../util.js'
@@ -107,14 +105,39 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           text-align: center;
         }
 
-        .message-actions {
-          margin-top: 8px;
+        .message-body {
           display: flex;
-          justify-content: flex-start;
+          align-items: flex-start;
+          gap: 10px;
+        }
+
+        .message-content {
+          flex: 1;
+          min-width: 0;
         }
 
         .share-button {
-          --md-text-button-label-text-size: 12px;
+          border: 1px solid var(--grampsjs-color-shade-180);
+          background: var(--grampsjs-color-shade-235);
+          color: var(--grampsjs-body-font-color-85);
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 500;
+          line-height: 1;
+          padding: 5px 10px;
+          margin-top: 2px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: background-color 0.15s ease;
+        }
+
+        .share-button:hover {
+          background: var(--grampsjs-color-shade-220);
+        }
+
+        .share-button:disabled {
+          opacity: 0.65;
+          cursor: default;
         }
       `,
     ]
@@ -154,26 +177,35 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
                 type="${message.role}"
                 .appState="${this.appState}"
               >
-                <div>
-                  ${renderMarkdownLinks(
-                    message.content || message.message || ''
-                  )}
-                </div>
                 ${message.role === 'ai'
                   ? html`
-                      <div class="message-actions">
-                        <md-text-button
+                      <div class="message-body">
+                        <div class="message-content">
+                          ${renderMarkdownLinks(
+                            message.content || message.message || ''
+                          )}
+                        </div>
+                        <button
                           class="share-button"
-                          ?disabled=${this._sharingIndex === i}
+                          type="button"
+                          aria-label="${this._('Share')}"
+                          title="${this._('Share')}"
+                          ?disabled="${this._sharingIndex === i}"
                           @click=${() => this._shareMessage(message, i)}
                         >
                           ${this._sharingIndex === i
                             ? this._('Sharing...')
                             : this._('Share')}
-                        </md-text-button>
+                        </button>
                       </div>
                     `
-                  : ''}
+                  : html`
+                      <div>
+                        ${renderMarkdownLinks(
+                          message.content || message.message || ''
+                        )}
+                      </div>
+                    `}
               </grampsjs-chat-message>
             `
           )}
