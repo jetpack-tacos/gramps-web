@@ -1,5 +1,6 @@
 import {html, css} from 'lit'
 import '@material/web/button/outlined-button'
+import '@material/mwc-icon'
 import {mdiFamilyTree, mdiDna, mdiSearchWeb} from '@mdi/js'
 import {GrampsjsObject} from './GrampsjsObject.js'
 import {asteriskIcon, crossIcon} from '../icons.js'
@@ -12,18 +13,41 @@ import {fireEvent} from '../util.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
   static get styles() {
-    return [super.styles, css``]
+    return [
+      super.styles,
+      css`
+        .missing-data {
+          color: var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-style: italic;
+          font-size: 0.9em;
+        }
+
+        .missing-data:hover {
+          color: var(--mdc-theme-primary);
+        }
+
+        .missing-data mwc-icon {
+          font-size: 18px;
+        }
+      `,
+    ]
   }
 
   static get properties() {
     return {
       homePersonDetails: {type: Object},
+      canEdit: {type: Boolean},
     }
   }
 
   constructor() {
     super()
     this.homePersonDetails = {}
+    this.canEdit = false
     this._objectsName = 'People'
     this._objectEndpoint = 'people'
     this._objectIcon = 'person'
@@ -36,6 +60,7 @@ export class GrampsjsPerson extends GrampsjsObject {
       <h2>
         <grampsjs-edit-gender
           ?edit="${this.edit}"
+          ?alwaysEditable="${this.canEdit}"
           gender="${this.data.gender}"
         ></grampsjs-edit-gender>
         ${this._displayName()}
@@ -84,6 +109,29 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _renderBirth() {
     const obj = this.data?.profile?.birth
+    if (obj?.date) {
+      return html`
+        <span class="event">
+          <i>${asteriskIcon}</i>
+          ${obj.date} ${obj.place ? this._('in') : ''}
+          ${obj.place_name || obj.place || ''}
+        </span>
+      `
+    }
+    if (this.canEdit) {
+      return html`
+        <span
+          class="missing-data"
+          role="button"
+          tabindex="0"
+          @click="${this._promptAddBirth}"
+          @keydown="${this._handleBirthPromptKeydown}"
+        >
+          <mwc-icon>add_circle_outline</mwc-icon>
+          ${this._('Add birth information')}
+        </span>
+      `
+    }
     if (obj === undefined || Object.keys(obj).length === 0) {
       return ''
     }
@@ -98,6 +146,29 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _renderDeath() {
     const obj = this.data?.profile?.death
+    if (obj?.date) {
+      return html`
+        <span class="event">
+          <i>${crossIcon}</i>
+          ${obj.date} ${obj.place ? this._('in') : ''}
+          ${obj.place_name || obj.place || ''}
+        </span>
+      `
+    }
+    if (this.canEdit) {
+      return html`
+        <span
+          class="missing-data"
+          role="button"
+          tabindex="0"
+          @click="${this._promptAddDeath}"
+          @keydown="${this._handleDeathPromptKeydown}"
+        >
+          <mwc-icon>add_circle_outline</mwc-icon>
+          ${this._('Add death information')}
+        </span>
+      `
+    }
     if (obj === undefined || Object.keys(obj).length === 0) {
       return ''
     }
@@ -111,11 +182,29 @@ export class GrampsjsPerson extends GrampsjsObject {
   }
 
   _renderRelation() {
+    const hasParents = this.data?.parent_family_list?.length > 0
+    const missingParentsPrompt =
+      !hasParents && this.canEdit
+        ? html`
+            <span
+              class="missing-data"
+              role="button"
+              tabindex="0"
+              @click="${this._promptAddParents}"
+              @keydown="${this._handleParentsPromptKeydown}"
+            >
+              <mwc-icon>add_circle_outline</mwc-icon>
+              ${this._('Add parents')}
+            </span>
+          `
+        : html``
+
     if (!this.homePersonDetails.handle) {
       // no home person set
-      return ''
+      return missingParentsPrompt
     }
     return html`
+      ${missingParentsPrompt}
       <dl>
         <dt>${this._('Relationship to home person')}</dt>
         <dd>
@@ -228,6 +317,39 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _handleDnaButtonClick() {
     fireEvent(this, 'nav', {path: `dna-matches/${this.data.gramps_id}`})
+  }
+
+  _promptAddBirth() {
+    fireEvent(this, 'edit-mode:toggle')
+  }
+
+  _promptAddDeath() {
+    fireEvent(this, 'edit-mode:toggle')
+  }
+
+  _promptAddParents() {
+    fireEvent(this, 'edit-mode:toggle')
+  }
+
+  _handleBirthPromptKeydown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      this._promptAddBirth()
+    }
+  }
+
+  _handleDeathPromptKeydown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      this._promptAddDeath()
+    }
+  }
+
+  _handleParentsPromptKeydown(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      this._promptAddParents()
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit'
+import {LitElement, html, css} from 'lit'
 
 import '@material/mwc-icon-button'
 
@@ -19,13 +19,25 @@ const newGender = {
 
 export class GrampsjsEditGender extends LitElement {
   static get styles() {
-    return [sharedStyles]
+    return [
+      sharedStyles,
+      css`
+        .gender-icon.always-editable {
+          cursor: pointer;
+        }
+
+        .gender-icon.always-editable:hover {
+          opacity: 0.7;
+        }
+      `,
+    ]
   }
 
   static get properties() {
     return {
       gender: {type: Number},
       edit: {type: Boolean},
+      alwaysEditable: {type: Boolean},
     }
   }
 
@@ -33,22 +45,26 @@ export class GrampsjsEditGender extends LitElement {
     super()
     this.gender = 2 // unkown
     this.edit = false
+    this.alwaysEditable = false
   }
 
   render() {
-    if (!this.edit) {
+    if (!this.edit && !this.alwaysEditable) {
       return ''
     }
     return html`
       <mwc-icon-button
+        class="edit gender-icon ${this.alwaysEditable ? 'always-editable' : ''}"
         icon="${icons[this.gender]}"
         @click="${this._handleClick}"
-        class="edit"
       ></mwc-icon-button>
     `
   }
 
   _handleClick() {
+    if (!this.edit && !this.alwaysEditable) {
+      return
+    }
     fireEvent(this, 'edit:action', {
       action: 'updateProp',
       data: {gender: newGender[this.gender]},
