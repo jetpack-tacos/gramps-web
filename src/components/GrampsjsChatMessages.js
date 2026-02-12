@@ -107,13 +107,18 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
 
         .message-body {
           display: flex;
-          align-items: flex-start;
-          gap: 10px;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 6px;
         }
 
         .message-content {
-          flex: 1;
           min-width: 0;
+        }
+
+        .message-actions {
+          display: flex;
+          justify-content: flex-end;
         }
 
         .share-button {
@@ -125,7 +130,6 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           font-weight: 500;
           line-height: 1;
           padding: 5px 10px;
-          margin-top: 2px;
           cursor: pointer;
           white-space: nowrap;
           transition: background-color 0.15s ease;
@@ -185,18 +189,20 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
                             message.content || message.message || ''
                           )}
                         </div>
-                        <button
-                          class="share-button"
-                          type="button"
-                          aria-label="${this._('Share')}"
-                          title="${this._('Share')}"
-                          ?disabled="${this._sharingIndex === i}"
-                          @click=${() => this._shareMessage(message, i)}
-                        >
-                          ${this._sharingIndex === i
-                            ? this._('Sharing...')
-                            : this._('Share')}
-                        </button>
+                        <div class="message-actions">
+                          <button
+                            class="share-button"
+                            type="button"
+                            aria-label="${this._('Share')}"
+                            title="${this._('Share')}"
+                            ?disabled="${this._sharingIndex === i}"
+                            @click=${() => this._shareMessage(message, i)}
+                          >
+                            ${this._sharingIndex === i
+                              ? this._('Sharing...')
+                              : this._('Share')}
+                          </button>
+                        </div>
                       </div>
                     `
                   : html`
