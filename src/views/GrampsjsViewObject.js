@@ -6,8 +6,14 @@ import '@material/mwc-fab'
 import '@material/mwc-icon'
 
 import {GrampsjsView} from './GrampsjsView.js'
+import '../components/GrampsjsQuickEventDialog.js'
 
-import {fireEvent, objectTypeToEndpoint} from '../util.js'
+import {
+  fireEvent,
+  makeHandle,
+  emptyDate,
+  objectTypeToEndpoint,
+} from '../util.js'
 
 const editTitle = {
   person: 'Edit Person',
@@ -364,6 +370,8 @@ export class GrampsjsViewObject extends GrampsjsView {
           )
         }
       })
+    } else if (e.detail.action === 'quickAddEvent') {
+      this._openQuickAddEventDialog(e.detail.data?.eventType)
     } else if (e.detail.action === 'addCitation') {
       this.addHandle(
         e.detail.data.data[0],
@@ -793,5 +801,67 @@ export class GrampsjsViewObject extends GrampsjsView {
     this.appState
       .apiPut(url, updateFunc(objNew))
       .then(() => this._updateData(false))
+  }
+
+  _openQuickAddEventDialog(eventType) {
+    this.editDialogContent = html`
+      <grampsjs-quick-event-dialog
+        .appState="${this.appState}"
+        .eventType="${eventType || 12}"
+        .dialogTitle="${this._(
+          'Add %s',
+          this._getQuickEventTypeLabel(eventType)
+        )}"
+        @object:save="${this._handleQuickAddEventSave}"
+        @object:cancel="${this._handleQuickAddEventCancel}"
+      ></grampsjs-quick-event-dialog>
+    `
+  }
+
+  _handleQuickAddEventCancel() {
+    this.editDialogContent = ''
+  }
+
+  _handleQuickAddEventSave(e) {
+    const eventType = parseInt(e.detail.data?.eventType, 10)
+    const type = this._getQuickEventType(eventType)
+    if (!type) {
+      fireEvent(this, 'grampsjs:error', {
+        message: this._('Unsupported event type'),
+      })
+      this.editDialogContent = ''
+      return
+    }
+    const handle = makeHandle()
+    fireEvent(this, 'edit:action', {
+      action: 'newEvent',
+      data: {
+        _class: 'Event',
+        handle,
+        type,
+        date: e.detail.data?.date || {...emptyDate},
+        place: e.detail.data?.place || '',
+        description: '',
+        role: {_class: 'EventRoleType', value: 1, string: 'Primary'},
+      },
+    })
+    this.editDialogContent = ''
+  }
+
+  _getQuickEventType(eventType) {
+    if (eventType === 12) {
+      return {_class: 'EventType', value: 12, string: 'Birth'}
+    }
+    if (eventType === 13) {
+      return {_class: 'EventType', value: 13, string: 'Death'}
+    }
+    return null
+  }
+
+  _getQuickEventTypeLabel(eventType) {
+    if (parseInt(eventType, 10) === 13) {
+      return this._('Death')
+    }
+    return this._('Birth')
   }
 }

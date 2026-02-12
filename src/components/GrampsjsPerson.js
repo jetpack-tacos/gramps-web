@@ -320,11 +320,17 @@ export class GrampsjsPerson extends GrampsjsObject {
   }
 
   _promptAddBirth() {
-    fireEvent(this, 'edit-mode:toggle')
+    fireEvent(this, 'edit:action', {
+      action: 'quickAddEvent',
+      data: {eventType: 12},
+    })
   }
 
   _promptAddDeath() {
-    fireEvent(this, 'edit-mode:toggle')
+    fireEvent(this, 'edit:action', {
+      action: 'quickAddEvent',
+      data: {eventType: 13},
+    })
   }
 
   _promptAddParents() {
