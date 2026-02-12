@@ -98,9 +98,16 @@ export class GrampsjsHomePerson extends GrampsjsAppStateMixin(LitElement) {
       this.appState.updateSettings({homePerson: obj.object.gramps_id}, true)
       this.homePersonDetails = obj
       this.renderRoot.querySelector('md-dialog')?.close()
+      this._saveHomePersonToServer(obj.object.gramps_id)
     }
     e.preventDefault()
     e.stopPropagation()
+  }
+
+  _saveHomePersonToServer(grampsId) {
+    this.appState
+      .apiPut('/api/users/-/home-person/', {gramps_id: grampsId})
+      .catch(() => {})
   }
 }
 

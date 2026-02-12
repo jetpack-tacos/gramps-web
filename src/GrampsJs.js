@@ -709,8 +709,13 @@ export class GrampsJs extends LitElement {
   _loadHomePersonInfo() {
     const grampsId = this.appState.settings.homePerson
     if (!grampsId) {
+      this._fetchServerHomePerson()
       return
     }
+    this._fetchPersonDetails(grampsId)
+  }
+
+  _fetchPersonDetails(grampsId) {
     this.appState
       .apiGet(
         `/api/people/?gramps_id=${grampsId}&profile=self&extend=media_list`
@@ -722,6 +727,18 @@ export class GrampsJs extends LitElement {
           this._showError(data.error)
         }
       })
+  }
+
+  _fetchServerHomePerson() {
+    this.appState
+      .apiGet('/api/users/-/home-person/')
+      .then(data => {
+        if (data?.data?.gramps_id) {
+          this.appState.updateSettings({homePerson: data.data.gramps_id}, true)
+          this._fetchPersonDetails(data.data.gramps_id)
+        }
+      })
+      .catch(() => {})
   }
 
   _setReady() {
