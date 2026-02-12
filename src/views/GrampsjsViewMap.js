@@ -143,7 +143,7 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       >
       <grampsjs-map-time-slider
         min="${this._minYear}"
-        ?filterMap="${this._currentLayer === 'OpenHistoricalMap'}"
+        ?filterMap="${this._currentLayer === 'ohm'}"
         @timeslider:change="${this._handleTimeSliderChange}"
         .appState="${this.appState}"
       ></grampsjs-map-time-slider>
@@ -169,7 +169,7 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   _handleLayerChange(e) {
-    this._currentLayer = e.detail.layer
+    this._currentLayer = e.detail.style
   }
 
   update(changed) {

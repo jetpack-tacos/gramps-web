@@ -235,7 +235,7 @@ class GrampsjsMapSearchbox extends GrampsjsAppStateMixin(LitElement) {
       <mwc-list-item graphic="icon">
         ${obj.object?.profile?.name || ''}
         <mwc-icon slot="graphic"
-          >${obj.object.lat && obj.object.long
+          >${obj.object?.profile?.lat && obj.object?.profile?.long
             ? 'place'
             : 'location_off'}</mwc-icon
         >

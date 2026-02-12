@@ -29,9 +29,18 @@ class GrampsjsMapMarker extends LitElement {
     this.size = 32
   }
 
-  attributeChangedCallback(name, oldval, newval) {
-    super.attributeChangedCallback(name, oldval, newval)
-    this.updateMarker()
+  updated(changed) {
+    super.updated(changed)
+    if (
+      this._marker &&
+      (changed.has('latitude') ||
+        changed.has('longitude') ||
+        changed.has('opacity') ||
+        changed.has('size') ||
+        changed.has('popupLabel'))
+    ) {
+      this.updateMarker()
+    }
   }
 
   firstUpdated() {
@@ -48,9 +57,13 @@ class GrampsjsMapMarker extends LitElement {
     el.style.height = `${this.size}px`
     el.style.opacity = this.opacity
     el.style.cursor = 'pointer'
+    const color =
+      getComputedStyle(this)
+        .getPropertyValue('--grampsjs-map-marker-color')
+        .trim() || '#EA4335'
     el.innerHTML = `
       <svg width="${this.size}" height="${this.size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="${mdiMapMarker}" fill="var(--grampsjs-map-marker-color)" />
+        <path d="${mdiMapMarker}" fill="${color}" />
       </svg>
     `
     el.addEventListener('click', this.clickHandler.bind(this))

@@ -68,40 +68,35 @@ export class GrampsjsPlaceBox extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-    <h2>
-      ${this.data?.name?.value || this.data.title || this._('Place')}
-      ${
-        this.data?.profile?.parent_places.length > 0
+      <h2>
+        ${this.data?.name?.value || this.data.title || this._('Place')}
+        ${this.data?.profile?.parent_places.length > 0
           ? html`<h4>
               ${this.data.profile.parent_places.map(obj => obj.name).join(', ')}
             </h4>`
-          : ''
-      }
-          </h4>
+          : ''}
+        ${this.data?.media_list?.length
+          ? html`
+              <h3>${this._('Gallery')}</h3>
 
-    ${
-      this.data?.media_list?.length
-        ? html`
-            <h3>${this._('Gallery')}</h3>
+              <grampsjs-connected-gallery
+                .appState="${this.appState}"
+                handle=${this.data.handle}
+                objectType="place"
+                square
+                size="95"
+                radius="7"
+                count="${this.data?.media_list?.length || 1}"
+              ></grampsjs-connected-gallery>
+            `
+          : ''}
 
-            <grampsjs-connected-gallery
-              .appState="${this.appState}"
-              handle=${this.data.handle}
-              objectType="place"
-              square
-              size="95"
-              radius="7"
-              count="${this.data?.media_list?.length || 1}"
-            ></grampsjs-connected-gallery>
-          `
-        : ''
-    }
-
-    <div class="right">
-      <mwc-button
-        @click="${this._handleDetailClick}"
-      >${this._('Show Details')}</mwc-button>
-    </div>
+        <div class="right">
+          <mwc-button @click="${this._handleDetailClick}"
+            >${this._('Show Details')}</mwc-button
+          >
+        </div>
+      </h2>
     `
   }
 

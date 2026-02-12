@@ -87,7 +87,7 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
     super()
     this.min = 1500
     this.value = new Date().getFullYear() - 50
-    this.span = 50
+    this.span = -50
     this.filterMap = false
   }
 
