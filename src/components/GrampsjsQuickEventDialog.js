@@ -13,14 +13,17 @@ export class GrampsjsQuickEventDialog extends GrampsjsObjectForm {
   static get properties() {
     return {
       eventType: {type: Number},
+      eventHandle: {type: String},
     }
   }
 
   constructor() {
     super()
     this.eventType = 12
+    this.eventHandle = ''
     this.data = {
       eventType: this.eventType,
+      eventHandle: this.eventHandle,
       date: {...emptyDate},
       place: '',
     }
@@ -28,10 +31,11 @@ export class GrampsjsQuickEventDialog extends GrampsjsObjectForm {
 
   update(changed) {
     super.update(changed)
-    if (changed.has('eventType')) {
+    if (changed.has('eventType') || changed.has('eventHandle')) {
       this.data = {
         ...this.data,
         eventType: this.eventType,
+        eventHandle: this.eventHandle,
       }
     }
   }
@@ -65,6 +69,7 @@ export class GrampsjsQuickEventDialog extends GrampsjsObjectForm {
     const payload = {
       ...this.data,
       eventType: this.eventType,
+      eventHandle: this.eventHandle,
       date: this.data.date || {...emptyDate},
       place: this.data.place || '',
     }

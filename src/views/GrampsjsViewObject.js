@@ -371,7 +371,10 @@ export class GrampsjsViewObject extends GrampsjsView {
         }
       })
     } else if (e.detail.action === 'quickAddEvent') {
-      this._openQuickAddEventDialog(e.detail.data?.eventType)
+      this._openQuickAddEventDialog(
+        e.detail.data?.eventType,
+        e.detail.data?.eventHandle
+      )
     } else if (e.detail.action === 'addCitation') {
       this.addHandle(
         e.detail.data.data[0],
@@ -803,13 +806,34 @@ export class GrampsjsViewObject extends GrampsjsView {
       .then(() => this._updateData(false))
   }
 
-  _openQuickAddEventDialog(eventType) {
+  async _openQuickAddEventDialog(eventType, eventHandle = '') {
+    let dialogData = {
+      eventType: eventType || 12,
+      date: {...emptyDate},
+      place: '',
+    }
+    if (eventHandle) {
+      const eventResult = await this.appState.apiGet(
+        `/api/events/${eventHandle}?locale=${this.appState.i18n.lang || 'en'}`
+      )
+      if ('error' in eventResult) {
+        fireEvent(this, 'grampsjs:error', {message: eventResult.error})
+        return
+      }
+      dialogData = {
+        ...dialogData,
+        date: eventResult.data?.date || {...emptyDate},
+        place: eventResult.data?.place || '',
+      }
+    }
     this.editDialogContent = html`
       <grampsjs-quick-event-dialog
         .appState="${this.appState}"
         .eventType="${eventType || 12}"
+        .eventHandle="${eventHandle || ''}"
+        .data="${dialogData}"
         .dialogTitle="${this._(
-          'Add %s',
+          eventHandle ? 'Edit %s' : 'Add %s',
           this._getQuickEventTypeLabel(eventType)
         )}"
         @object:save="${this._handleQuickAddEventSave}"
@@ -823,6 +847,12 @@ export class GrampsjsViewObject extends GrampsjsView {
   }
 
   _handleQuickAddEventSave(e) {
+    const eventHandle = e.detail.data?.eventHandle || ''
+    if (eventHandle) {
+      this._updateQuickEvent(eventHandle, e.detail.data)
+      this.editDialogContent = ''
+      return
+    }
     const eventType = parseInt(e.detail.data?.eventType, 10)
     const type = this._getQuickEventType(eventType)
     if (!type) {
@@ -846,6 +876,43 @@ export class GrampsjsViewObject extends GrampsjsView {
       },
     })
     this.editDialogContent = ''
+  }
+
+  async _updateQuickEvent(eventHandle, eventData) {
+    const eventResult = await this.appState.apiGet(
+      `/api/events/${eventHandle}?locale=${this.appState.i18n.lang || 'en'}`
+    )
+    if ('error' in eventResult) {
+      fireEvent(this, 'grampsjs:error', {message: eventResult.error})
+      return
+    }
+    const {extended, profile, backlinks, formatted, ...eventPayload} =
+      eventResult.data || {}
+    const updatedEvent = {
+      _class: 'Event',
+      ...eventPayload,
+      date: eventData?.date || {...emptyDate},
+    }
+    if (eventData?.place) {
+      updatedEvent.place = eventData.place
+    } else {
+      delete updatedEvent.place
+    }
+    const updateResult = await this.appState.apiPut(
+      `/api/events/${eventHandle}`,
+      updatedEvent
+    )
+    if ('error' in updateResult) {
+      fireEvent(this, 'grampsjs:error', {message: updateResult.error})
+      return
+    }
+    this._updateData(false)
+    fireEvent(this, 'grampsjs:notification', {
+      message: this._(
+        '%s details updated',
+        this._getQuickEventTypeLabel(eventData?.eventType)
+      ),
+    })
   }
 
   _getQuickEventType(eventType) {

@@ -33,6 +33,17 @@ export class GrampsjsPerson extends GrampsjsObject {
         .missing-data mwc-icon {
           font-size: 18px;
         }
+
+        .inline-fix {
+          margin-left: 8px;
+          border: none;
+          background: none;
+          color: var(--mdc-theme-primary);
+          cursor: pointer;
+          padding: 0;
+          font: inherit;
+          text-decoration: underline;
+        }
       `,
     ]
   }
@@ -109,12 +120,20 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _renderBirth() {
     const obj = this.data?.profile?.birth
+    const hasBirthEvent = Boolean(this._getPrimaryEventHandle(12))
     if (obj?.date) {
       return html`
         <span class="event">
           <i>${asteriskIcon}</i>
           ${obj.date} ${obj.place ? this._('in') : ''}
           ${obj.place_name || obj.place || ''}
+          ${this.canEdit
+            ? html`
+                <button class="inline-fix" @click="${this._promptAddBirth}">
+                  ${this._('Fix')}
+                </button>
+              `
+            : ''}
         </span>
       `
     }
@@ -128,7 +147,11 @@ export class GrampsjsPerson extends GrampsjsObject {
           @keydown="${this._handleBirthPromptKeydown}"
         >
           <mwc-icon>add_circle_outline</mwc-icon>
-          ${this._('Add birth information')}
+          ${this._(
+            hasBirthEvent
+              ? 'Complete birth information'
+              : 'Add birth information'
+          )}
         </span>
       `
     }
@@ -146,12 +169,20 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _renderDeath() {
     const obj = this.data?.profile?.death
+    const hasDeathEvent = Boolean(this._getPrimaryEventHandle(13))
     if (obj?.date) {
       return html`
         <span class="event">
           <i>${crossIcon}</i>
           ${obj.date} ${obj.place ? this._('in') : ''}
           ${obj.place_name || obj.place || ''}
+          ${this.canEdit
+            ? html`
+                <button class="inline-fix" @click="${this._promptAddDeath}">
+                  ${this._('Fix')}
+                </button>
+              `
+            : ''}
         </span>
       `
     }
@@ -165,7 +196,11 @@ export class GrampsjsPerson extends GrampsjsObject {
           @keydown="${this._handleDeathPromptKeydown}"
         >
           <mwc-icon>add_circle_outline</mwc-icon>
-          ${this._('Add death information')}
+          ${this._(
+            hasDeathEvent
+              ? 'Complete death information'
+              : 'Add death information'
+          )}
         </span>
       `
     }
@@ -320,16 +355,18 @@ export class GrampsjsPerson extends GrampsjsObject {
   }
 
   _promptAddBirth() {
+    const eventHandle = this._getPrimaryEventHandle(12)
     fireEvent(this, 'edit:action', {
       action: 'quickAddEvent',
-      data: {eventType: 12},
+      data: {eventType: 12, eventHandle},
     })
   }
 
   _promptAddDeath() {
+    const eventHandle = this._getPrimaryEventHandle(13)
     fireEvent(this, 'edit:action', {
       action: 'quickAddEvent',
-      data: {eventType: 13},
+      data: {eventType: 13, eventHandle},
     })
   }
 
@@ -356,6 +393,15 @@ export class GrampsjsPerson extends GrampsjsObject {
       e.preventDefault()
       this._promptAddParents()
     }
+  }
+
+  _getPrimaryEventHandle(eventType) {
+    const refIndex =
+      eventType === 12 ? this.data?.birth_ref_index : this.data?.death_ref_index
+    if (!Number.isInteger(refIndex) || refIndex < 0) {
+      return ''
+    }
+    return this.data?.event_ref_list?.[refIndex]?.ref || ''
   }
 }
 
