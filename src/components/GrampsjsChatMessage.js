@@ -12,6 +12,10 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
     return [
       sharedStyles,
       css`
+        :host {
+          display: block;
+        }
+
         .container {
           margin: 12px 0;
           font-size: 16px;
@@ -28,6 +32,7 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
           color: var(--grampsjs-body-font-color-60);
           padding: 0;
           border-radius: 0;
+          width: fit-content;
           margin-left: auto;
           max-width: 70%;
           margin-right: 10px;
