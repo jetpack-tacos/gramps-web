@@ -263,7 +263,20 @@ export class GrampsjsPerson extends GrampsjsObject {
     return html`
       ${missingParentsPrompt}
       <dl>
-        <dt>${this._('Relationship to home person')}</dt>
+        <dt>
+          <span class="editable-field">
+            ${this._('Relationship to home person')}
+            ${hasParents && this.canEdit
+              ? html`
+                  <mwc-icon-button
+                    class="inline-edit-icon"
+                    icon="edit"
+                    @click="${this._promptAddParents}"
+                  ></mwc-icon-button>
+                `
+              : ''}
+          </span>
+        </dt>
         <dd>
           <grampsjs-person-relationship
             person1="${this.homePersonDetails.handle}"

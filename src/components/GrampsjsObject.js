@@ -6,6 +6,7 @@ import {mdiTableOfContents} from '@mdi/js'
 
 import '@material/web/iconbutton/icon-button.js'
 import '@material/web/dialog/dialog.js'
+import '@material/mwc-icon-button'
 
 import {sharedStyles} from '../SharedStyles.js'
 import '../views/GrampsjsViewObjectNotes.js'
@@ -243,6 +244,22 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
           font-size: 24px;
           padding-bottom: 12px;
           border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .section-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .section-edit-icon {
+          --mdc-icon-size: 17px;
+          color: var(--grampsjs-body-font-color-60);
+          margin-left: 2px;
+        }
+
+        .section-edit-icon:hover {
+          color: var(--mdc-theme-primary);
         }
 
         .section * {
@@ -539,7 +556,18 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
         (key, idx, tabKeysArray) => html`<div class="row">
           <div class="section" id="section-${key}">
             <h3>
-              ${this._(_allTabs[key].title)}
+              <span class="section-title">
+                ${this._(_allTabs[key].title)}
+                ${this._canQuickEditSection(key)
+                  ? html`
+                      <mwc-icon-button
+                        class="section-edit-icon"
+                        icon="edit"
+                        @click="${() => this._handleSectionQuickEdit(key)}"
+                      ></mwc-icon-button>
+                    `
+                  : ''}
+              </span>
               ${this.tocSidebar || tabKeysArray.length <= 1
                 ? ''
                 : html`
@@ -573,6 +601,27 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
     if (dialog) {
       dialog.open = false
     }
+  }
+
+  _canQuickEditSection(sectionKey) {
+    if (this.edit || !this.appState?.permissions?.canEdit) {
+      return false
+    }
+    return _allTabs[sectionKey]?.conditionEdit(this.data) ?? false
+  }
+
+  _handleSectionQuickEdit(sectionKey) {
+    fireEvent(this, 'edit-mode:toggle')
+    setTimeout(() => {
+      const section = this.shadowRoot?.querySelector(`#section-${sectionKey}`)
+      if (section) {
+        section.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        })
+      }
+    }, 80)
   }
 
   renderTags() {
