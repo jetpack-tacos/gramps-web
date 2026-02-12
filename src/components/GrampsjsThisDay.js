@@ -166,7 +166,12 @@ export class GrampsjsThisDay extends GrampsjsAppStateMixin(LitElement) {
     this.error = ''
 
     try {
-      const response = await this.appState.apiGet('/api/this-day/')
+      const now = new Date()
+      const mm = String(now.getMonth() + 1).padStart(2, '0')
+      const dd = String(now.getDate()).padStart(2, '0')
+      const response = await this.appState.apiGet(
+        `/api/this-day/?date=${mm}-${dd}`
+      )
       this.content = response?.data?.content || ''
       this.monthDay = response?.data?.month_day || ''
     } catch (err) {
