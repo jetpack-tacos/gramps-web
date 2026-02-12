@@ -1,11 +1,13 @@
 import {html, css} from 'lit'
 import '@material/web/button/outlined-button'
 import '@material/mwc-icon'
+import '@material/mwc-icon-button'
 import {mdiFamilyTree, mdiDna, mdiSearchWeb} from '@mdi/js'
 import {GrampsjsObject} from './GrampsjsObject.js'
 import {asteriskIcon, crossIcon} from '../icons.js'
 import './GrampsJsImage.js'
 import './GrampsjsEditGender.js'
+import './GrampsjsFormEditName.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
 import './GrampsjsPersonInsights.js'
@@ -17,32 +19,43 @@ export class GrampsjsPerson extends GrampsjsObject {
       super.styles,
       css`
         .missing-data {
-          color: var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+          color: var(--md-sys-color-on-surface);
+          background-color: var(--md-sys-color-surface-container-high);
+          border: 1px solid var(--md-sys-color-outline-variant);
+          border-radius: 999px;
+          padding: 4px 10px;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          font-style: italic;
+          gap: 6px;
           font-size: 0.9em;
+          margin-right: 6px;
         }
 
         .missing-data:hover {
-          color: var(--mdc-theme-primary);
+          background-color: var(--md-sys-color-primary-container);
+          color: var(--md-sys-color-on-primary-container);
+          border-color: var(--md-sys-color-primary);
         }
 
         .missing-data mwc-icon {
-          font-size: 18px;
+          font-size: 16px;
         }
 
-        .inline-fix {
-          margin-left: 8px;
-          border: none;
-          background: none;
+        .editable-field {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+        }
+
+        .inline-edit-icon {
+          --mdc-icon-size: 17px;
+          color: var(--grampsjs-body-font-color-60);
+          margin-left: 2px;
+        }
+
+        .inline-edit-icon:hover {
           color: var(--mdc-theme-primary);
-          cursor: pointer;
-          padding: 0;
-          font: inherit;
-          text-decoration: underline;
         }
       `,
     ]
@@ -74,7 +87,18 @@ export class GrampsjsPerson extends GrampsjsObject {
           ?alwaysEditable="${this.canEdit}"
           gender="${this.data.gender}"
         ></grampsjs-edit-gender>
-        ${this._displayName()}
+        <span class="editable-field">
+          ${this._displayName()}
+          ${this.canEdit
+            ? html`
+                <mwc-icon-button
+                  class="inline-edit-icon"
+                  icon="edit"
+                  @click="${this._promptEditPrimaryName}"
+                ></mwc-icon-button>
+              `
+            : ''}
+        </span>
       </h2>
       ${this._renderBirth()} ${this._renderDeath()} ${this._renderRelation()}
       <p class="button-list">
@@ -123,15 +147,17 @@ export class GrampsjsPerson extends GrampsjsObject {
     const hasBirthEvent = Boolean(this._getPrimaryEventHandle(12))
     if (obj?.date) {
       return html`
-        <span class="event">
+        <span class="event editable-field">
           <i>${asteriskIcon}</i>
           ${obj.date} ${obj.place ? this._('in') : ''}
           ${obj.place_name || obj.place || ''}
           ${this.canEdit
             ? html`
-                <button class="inline-fix" @click="${this._promptAddBirth}">
-                  ${this._('Fix')}
-                </button>
+                <mwc-icon-button
+                  class="inline-edit-icon"
+                  icon="edit"
+                  @click="${this._promptAddBirth}"
+                ></mwc-icon-button>
               `
             : ''}
         </span>
@@ -139,20 +165,18 @@ export class GrampsjsPerson extends GrampsjsObject {
     }
     if (this.canEdit) {
       return html`
-        <span
+        <button
+          type="button"
           class="missing-data"
-          role="button"
-          tabindex="0"
           @click="${this._promptAddBirth}"
-          @keydown="${this._handleBirthPromptKeydown}"
         >
-          <mwc-icon>add_circle_outline</mwc-icon>
+          <mwc-icon>edit</mwc-icon>
           ${this._(
             hasBirthEvent
               ? 'Complete birth information'
               : 'Add birth information'
           )}
-        </span>
+        </button>
       `
     }
     if (obj === undefined || Object.keys(obj).length === 0) {
@@ -172,15 +196,17 @@ export class GrampsjsPerson extends GrampsjsObject {
     const hasDeathEvent = Boolean(this._getPrimaryEventHandle(13))
     if (obj?.date) {
       return html`
-        <span class="event">
+        <span class="event editable-field">
           <i>${crossIcon}</i>
           ${obj.date} ${obj.place ? this._('in') : ''}
           ${obj.place_name || obj.place || ''}
           ${this.canEdit
             ? html`
-                <button class="inline-fix" @click="${this._promptAddDeath}">
-                  ${this._('Fix')}
-                </button>
+                <mwc-icon-button
+                  class="inline-edit-icon"
+                  icon="edit"
+                  @click="${this._promptAddDeath}"
+                ></mwc-icon-button>
               `
             : ''}
         </span>
@@ -188,20 +214,18 @@ export class GrampsjsPerson extends GrampsjsObject {
     }
     if (this.canEdit) {
       return html`
-        <span
+        <button
+          type="button"
           class="missing-data"
-          role="button"
-          tabindex="0"
           @click="${this._promptAddDeath}"
-          @keydown="${this._handleDeathPromptKeydown}"
         >
-          <mwc-icon>add_circle_outline</mwc-icon>
+          <mwc-icon>edit</mwc-icon>
           ${this._(
             hasDeathEvent
               ? 'Complete death information'
               : 'Add death information'
           )}
-        </span>
+        </button>
       `
     }
     if (obj === undefined || Object.keys(obj).length === 0) {
@@ -221,16 +245,14 @@ export class GrampsjsPerson extends GrampsjsObject {
     const missingParentsPrompt =
       !hasParents && this.canEdit
         ? html`
-            <span
+            <button
+              type="button"
               class="missing-data"
-              role="button"
-              tabindex="0"
               @click="${this._promptAddParents}"
-              @keydown="${this._handleParentsPromptKeydown}"
             >
-              <mwc-icon>add_circle_outline</mwc-icon>
+              <mwc-icon>edit</mwc-icon>
               ${this._('Add parents')}
-            </span>
+            </button>
           `
         : html``
 
@@ -354,6 +376,29 @@ export class GrampsjsPerson extends GrampsjsObject {
     fireEvent(this, 'nav', {path: `dna-matches/${this.data.gramps_id}`})
   }
 
+  _promptEditPrimaryName() {
+    this.dialogContent = html`
+      <grampsjs-form-edit-name
+        id="person-primary-name"
+        @object:save="${this._handleSavePrimaryName}"
+        @object:cancel="${this._handleCancelDialog}"
+        .appState="${this.appState}"
+        .data="${this.data?.primary_name || {}}"
+      >
+      </grampsjs-form-edit-name>
+    `
+  }
+
+  _handleSavePrimaryName(e) {
+    fireEvent(this, 'edit:action', {
+      action: 'updateName',
+      data: {index: 0, name: e.detail.data},
+    })
+    e.preventDefault()
+    e.stopPropagation()
+    this.dialogContent = ''
+  }
+
   _promptAddBirth() {
     const eventHandle = this._getPrimaryEventHandle(12)
     fireEvent(this, 'edit:action', {
@@ -372,27 +417,6 @@ export class GrampsjsPerson extends GrampsjsObject {
 
   _promptAddParents() {
     fireEvent(this, 'edit-mode:toggle')
-  }
-
-  _handleBirthPromptKeydown(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      this._promptAddBirth()
-    }
-  }
-
-  _handleDeathPromptKeydown(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      this._promptAddDeath()
-    }
-  }
-
-  _handleParentsPromptKeydown(e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      this._promptAddParents()
-    }
   }
 
   _getPrimaryEventHandle(eventType) {
