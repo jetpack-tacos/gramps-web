@@ -107,6 +107,12 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
           text-align: center;
           padding: 12px 0;
         }
+
+        .retry-help {
+          margin-top: 8px;
+          font-size: 12px;
+          color: var(--grampsjs-body-font-color-50);
+        }
       `,
     ]
   }
@@ -169,9 +175,12 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
           </div>
           <div class="error">${this._error}</div>
           <div class="retry-area">
-            <md-filled-tonal-button @click="${this._fetchConnections}">
+            <md-filled-tonal-button @click="${() => this._fetchConnections()}">
               ${this._('Try Again')}
             </md-filled-tonal-button>
+            <div class="retry-help">
+              ${this._('Retrying fetches fresh data from the server.')}
+            </div>
           </div>
         </div>
       `
@@ -208,7 +217,13 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
         this._connections = data.data.data
       } else if (data?.error) {
         this._connections = null
-        this._error = data.error
+        const msg = data.error || ''
+        this._error =
+          msg.toLowerCase() === 'not found'
+            ? this._(
+                'Connections endpoint returned not found. This can happen if backend routes are out of date or person lookup failed.'
+              )
+            : msg
       } else {
         this._connections = null
         this._error = this._('No connections available')
