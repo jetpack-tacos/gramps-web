@@ -2,9 +2,13 @@
 Places list view with batch geocoding
 */
 
-import { html, css } from 'lit'
-import { GrampsjsViewObjectsBase } from './GrampsjsViewObjectsBase.js'
-import { prettyTimeDiffTimestamp, filterCounts, clickKeyHandler } from '../util.js'
+import {html, css} from 'lit'
+import {GrampsjsViewObjectsBase} from './GrampsjsViewObjectsBase.js'
+import {
+  prettyTimeDiffTimestamp,
+  filterCounts,
+  clickKeyHandler,
+} from '../util.js'
 import '@material/mwc-button'
 
 export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
@@ -49,18 +53,18 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
   static get properties() {
     return {
       ...super.properties,
-      _geocodeStatus: { type: String },
-      _geocodeMessage: { type: String },
-      _geocodeRunning: { type: Boolean },
+      _geocodeStatus: {type: String},
+      _geocodeMessage: {type: String},
+      _geocodeRunning: {type: Boolean},
     }
   }
 
   constructor() {
     super()
     this._columns = {
-      grampsId: { title: 'GenAI ID', sort: 'gramps_id' },
-      title: { title: 'Name', sort: 'title' },
-      change: { title: 'Last changed', sort: 'change' },
+      grampsId: {title: 'GenAI ID', sort: 'gramps_id'},
+      title: {title: 'Name', sort: 'title'},
+      change: {title: 'Last changed', sort: 'change'},
     }
     this._objectsName = 'places'
     this._geocodeStatus = ''
@@ -110,10 +114,10 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
           ${this._geocodeRunning ? 'Geocoding...' : 'Batch Geocode Places'}
         </mwc-button>
         ${this._geocodeMessage
-        ? html`<span class="geocode-status ${this._geocodeStatus}"
+          ? html`<span class="geocode-status ${this._geocodeStatus}"
               >${this._geocodeMessage}</span
             >`
-        : html`<span class="geocode-status"
+          : html`<span class="geocode-status"
               >Add coordinates to places without lat/long</span
             >`}
       </div>
@@ -134,7 +138,8 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
       } else if ('task' in response) {
         // Celery task was started
         this._geocodeStatus = 'running'
-        this._geocodeMessage = 'Geocoding task started. This may take a few minutes...'
+        this._geocodeMessage =
+          'Geocoding task started. This may take a few minutes...'
         // Poll for task completion
         this._pollGeocodeTask(response.task.id)
       } else if ('updated' in response) {
@@ -157,10 +162,10 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
   }
 
   async _pollGeocodeTask(taskId) {
-    const pollInterval = 2000 // 2 seconds
-    const maxAttempts = 150 // 5 minutes max
+    const pollInterval = 3000 // 3 seconds
+    const maxAttempts = 600 // 30 minutes max
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       // eslint-disable-next-line no-await-in-loop
       await new Promise(resolve => setTimeout(resolve, pollInterval))
 
@@ -180,7 +185,9 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
         if (status === 'SUCCESS' || status === 'COMPLETE') {
           const info = response.data?.info || response.info || {}
           this._geocodeStatus = 'success'
-          this._geocodeMessage = `Done! Updated ${info.updated || 0} of ${info.total || 0} places.`
+          this._geocodeMessage = `Done! Updated ${info.updated || 0} of ${
+            info.total || 0
+          } places.`
           this._geocodeRunning = false
           // Refresh the data
           this._fetchData()
@@ -188,8 +195,13 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
         }
 
         if (status === 'FAILURE' || status === 'ERROR') {
+          const info =
+            response.data?.info || response.info || response.data?.result || {}
+          const errorDetail = info.error || info.message || ''
           this._geocodeStatus = 'error'
-          this._geocodeMessage = 'Geocoding task failed.'
+          this._geocodeMessage = `Geocoding task failed.${
+            errorDetail ? ` ${errorDetail}` : ' Check server logs.'
+          }`
           this._geocodeRunning = false
           return
         }
@@ -197,10 +209,15 @@ export class GrampsjsViewPlaces extends GrampsjsViewObjectsBase {
         // Still running, update progress if available
         const info = response.data?.info || response.info || {}
         if (info.current !== undefined && info.total !== undefined) {
-          this._geocodeMessage = `Geocoding... ${info.current}/${info.total} places processed`
+          const parts = [`${info.current}/${info.total} places`]
+          if (info.updated !== undefined) parts.push(`${info.updated} updated`)
+          if (info.errors !== undefined && info.errors > 0)
+            parts.push(`${info.errors} errors`)
+          this._geocodeMessage = `Geocoding... ${parts.join(', ')}`
         }
       } catch (err) {
         // Network error, keep trying
+        // eslint-disable-next-line no-console
         console.warn('Error polling geocode task:', err)
       }
     }
