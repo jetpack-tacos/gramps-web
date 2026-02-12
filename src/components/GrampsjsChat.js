@@ -142,6 +142,13 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     }
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  _normalizeRole(role) {
+    if (role === 'user' || role === 'human') return 'human'
+    if (role === 'assistant' || role === 'model' || role === 'ai') return 'ai'
+    return role
+  }
+
   async _handleSelectConversation(e) {
     const {id} = e.detail
     if (id === this.activeConversationId) return
@@ -153,14 +160,10 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     const data = await this.appState.apiGet(`/api/conversations/${id}/`)
     this.loading = false
 
-    if (data?.data?.messages) {
-      this.messages = data.data.messages.map(msg => ({
-        role: msg.role === 'model' ? 'ai' : msg.role,
-        content: msg.content,
-      }))
-    } else if (data?.messages) {
-      this.messages = data.messages.map(msg => ({
-        role: msg.role === 'model' ? 'ai' : msg.role,
+    const rawMessages = data?.data?.messages || data?.messages
+    if (rawMessages) {
+      this.messages = rawMessages.map(msg => ({
+        role: this._normalizeRole(msg.role),
         content: msg.content,
       }))
     }

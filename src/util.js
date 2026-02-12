@@ -354,12 +354,20 @@ export function objectDescription(type, obj, strings) {
 
 export function objectDetail(type, obj, strings) {
   switch (type) {
-    case 'person':
-      return `
-    ${obj?.profile?.birth?.date ? `* ${obj.profile.birth.date}` : ''}${
-        obj?.profile?.birth?.place && obj?.profile?.birth?.date ? ', ' : ''
-      }${obj?.profile?.birth?.place_name || obj?.profile?.birth?.place || ''}
-    `
+    case 'person': {
+      const genderIcon = {0: '\u2640', 1: '\u2642', 2: '?'}[obj?.gender] || ''
+      const birth = obj?.profile?.birth?.date
+        ? `* ${obj.profile.birth.date}`
+        : ''
+      const birthPlace =
+        obj?.profile?.birth?.place && obj?.profile?.birth?.date
+          ? `, ${obj.profile.birth.place_name || obj.profile.birth.place}`
+          : obj?.profile?.birth?.place_name || obj?.profile?.birth?.place || ''
+      const death = obj?.profile?.death?.date
+        ? ` \u2020 ${obj.profile.death.date}`
+        : ''
+      return `${genderIcon} ${birth}${birthPlace}${death}`.trim()
+    }
     // case 'family':
     //   return ''
     case 'event':
