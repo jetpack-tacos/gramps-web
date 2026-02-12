@@ -159,7 +159,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   _scrollToBottom() {
     const container = this.renderRoot.querySelector('.messages-container')
     if (container) {
-      container.scrollTop = container.scrollHeight
+      container.scrollTop = 0
     }
   }
 }

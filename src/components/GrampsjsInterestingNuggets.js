@@ -241,7 +241,7 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
         // After generation, reload to get fresh nuggets
         await this._loadNuggets()
         fireEvent(this, 'grampsjs:notification', {
-          message: this._(`Generated ${data.count} new discoveries!`),
+          message: this._('Generated new discoveries!'),
         })
       }
     } catch (err) {
