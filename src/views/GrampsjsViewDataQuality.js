@@ -166,6 +166,14 @@ export class GrampsjsViewDataQuality extends GrampsjsStaleDataMixin(
           width: 1rem;
         }
 
+        .dq-gender-symbol.male {
+          color: var(--color-boy);
+        }
+
+        .dq-gender-symbol.female {
+          color: var(--color-girl);
+        }
+
         .dq-row-actions {
           display: flex;
           gap: 8px;
@@ -267,10 +275,11 @@ export class GrampsjsViewDataQuality extends GrampsjsStaleDataMixin(
     const isUnknownGender = activeCategory?.key === 'unknown-gender'
     const canEditGender = this.appState.permissions?.canEdit
     const isPending = this._pendingGenderHandle === record.handle
+    const genderClass = {0: 'female', 1: 'male'}[record.gender] || ''
     return html`
       <li class="dq-record">
         <div class="dq-record-person">
-          <span class="dq-gender-symbol"
+          <span class="dq-gender-symbol ${genderClass}"
             >${this._getGenderSymbol(record.gender)}</span
           >
           <button
