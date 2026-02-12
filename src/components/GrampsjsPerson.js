@@ -9,7 +9,6 @@ import './GrampsjsEditGender.js'
 import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
 import './GrampsjsPersonInsights.js'
-import './GrampsjsPersonConnections.js'
 import {fireEvent} from '../util.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
@@ -83,10 +82,6 @@ export class GrampsjsPerson extends GrampsjsObject {
         .grampsId="${this.data.gramps_id}"
         .appState="${this.appState}"
       ></grampsjs-person-insights>
-      <grampsjs-person-connections
-        .grampsId="${this.data.gramps_id}"
-        .appState="${this.appState}"
-      ></grampsjs-person-connections>
     `
   }
 
