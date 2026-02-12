@@ -17,10 +17,10 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
           font-size: 16px;
           line-height: 24px;
           font-weight: 340;
-          clear: right;
           max-width: 90%;
           display: flex;
           align-items: flex-start;
+          gap: 8px;
         }
 
         .container.human {
@@ -28,7 +28,7 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
           color: var(--grampsjs-body-font-color-60);
           padding: 0;
           border-radius: 0;
-          float: right;
+          margin-left: auto;
           max-width: 70%;
           margin-right: 10px;
         }

@@ -32,8 +32,6 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
         .messages-container {
           flex: 1;
           overflow-y: auto;
-          display: flex;
-          flex-direction: column-reverse;
           padding: 0 10px 20px 10px;
         }
 
@@ -238,7 +236,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   _scrollToBottom() {
     const container = this.renderRoot.querySelector('.messages-container')
     if (container) {
-      container.scrollTop = 0
+      container.scrollTop = container.scrollHeight
     }
   }
 
