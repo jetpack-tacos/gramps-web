@@ -65,10 +65,6 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
         md-menu {
           --md-menu-item-one-line-container-height: 48px;
         }
-
-        md-switch {
-          transform: scale(0.5);
-        }
       `,
     ]
   }
