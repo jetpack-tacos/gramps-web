@@ -33,3 +33,12 @@ Follow these rules before making any edits.
    - `git show --name-only --oneline -1`
    - `git status --short`
 
+## Current navigation notes
+
+1. The left drawer includes a `Shared` item between `Blog` and `Lists` (route: `/shared`).
+2. `Shared` is chat-permission gated (`canUseChat`) and is rendered via:
+   - `src/components/GrampsjsMainMenu.js`
+   - `src/components/GrampsjsPages.js`
+   - `src/views/GrampsjsViewSharedDiscoveries.js`
+   - `src/components/GrampsjsSharedDiscoveries.js`
+3. Shared discoveries should not be rendered on Home (`GrampsjsViewDashboard`) or Blog (`GrampsjsViewBlog`).
