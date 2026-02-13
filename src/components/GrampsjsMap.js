@@ -17,6 +17,12 @@ import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
 const defaultConfig = {
   mapOhmStyle: 'https://www.openhistoricalmap.org/map-styles/main/main.json',
+  mapProjection: 'globe',
+  mapEnableGlobeControl: true,
+  mapMaxParallelImageRequests: 24,
+  mapMaxTileCacheZoomLevels: 8,
+  mapFadeDuration: 120,
+  mapCancelPendingTileRequestsWhileZooming: false,
 }
 
 const {maplibregl} = window
@@ -94,13 +100,19 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
 
   firstUpdated() {
     const mapel = this.shadowRoot.getElementById(this.mapid)
-    const styleUrl = this._getStyleUrl()
+    const config = this._getMapConfig()
+    const styleUrl = this._getStyleUrl(config)
+    this._configureGlobalMaplibreOptions(config)
     this._map = new maplibregl.Map({
       container: mapel,
       style: styleUrl,
       center: [this.longitude, this.latitude],
       zoom: this.zoom,
       attributionControl: true,
+      fadeDuration: config.mapFadeDuration,
+      maxTileCacheZoomLevels: config.mapMaxTileCacheZoomLevels,
+      cancelPendingTileRequestsWhileZooming:
+        config.mapCancelPendingTileRequestsWhileZooming,
     })
     this._map.on('click', e => {
       const mapContainer = this._map.getContainer()
@@ -114,6 +126,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       mapContainer.dispatchEvent(customEvent)
     })
     this._map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
+    this._addGlobeControl(config)
     // Add geolocate control to the map controller
     this._map.addControl(
       new maplibregl.GeolocateControl({
@@ -126,6 +139,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       'bottom-right'
     )
     this._map.on('load', () => {
+      this._setProjection(config.mapProjection)
       if (this.year > 0 && this._map.filterByDate) {
         this._map.filterByDate(`${this.year}`)
       }
@@ -135,6 +149,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
           [this.longMax, this.latMax],
         ])
       }
+      fireEvent(this, 'map:moveend', {bounds: this._map.getBounds()})
     })
     this._map.on('moveend', () => {
       fireEvent(this, 'map:moveend', {bounds: this._map.getBounds()})
@@ -196,9 +211,48 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  _getStyleUrl() {
-    const config = {...defaultConfig, ...window.grampsjsConfig}
+  _getMapConfig() {
+    return {...defaultConfig, ...window.grampsjsConfig}
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _getStyleUrl(config = this._getMapConfig()) {
     return config.mapOhmStyle
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _configureGlobalMaplibreOptions(config) {
+    if (
+      Number.isFinite(config.mapMaxParallelImageRequests) &&
+      typeof maplibregl.setMaxParallelImageRequests === 'function'
+    ) {
+      maplibregl.setMaxParallelImageRequests(config.mapMaxParallelImageRequests)
+    }
+  }
+
+  _addGlobeControl(config) {
+    if (
+      !config.mapEnableGlobeControl ||
+      typeof maplibregl.GlobeControl !== 'function'
+    ) {
+      return
+    }
+    this._map.addControl(new maplibregl.GlobeControl(), 'bottom-right')
+  }
+
+  _setProjection(projection) {
+    if (
+      !this._map ||
+      typeof this._map.setProjection !== 'function' ||
+      typeof projection !== 'string'
+    ) {
+      return
+    }
+    const type = projection.toLowerCase()
+    if (!['globe', 'mercator'].includes(type)) {
+      return
+    }
+    this._map.setProjection({type})
   }
 }
 
