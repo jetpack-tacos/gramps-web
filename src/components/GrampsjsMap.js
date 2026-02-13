@@ -233,11 +233,10 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
     })
   }
 
+  // eslint-disable-next-line class-methods-use-this
   _getStyleUrl(style) {
     const config = {...defaultConfig, ...window.grampsjsConfig}
-    const theme = this.appState.getCurrentTheme()
-    const mapBaseStyle =
-      theme === 'dark' ? config.mapBaseStyleDark : config.mapBaseStyleLight
+    const mapBaseStyle = config.mapBaseStyleLight
     return style === 'base' ? mapBaseStyle : config.mapOhmStyle
   }
 }
