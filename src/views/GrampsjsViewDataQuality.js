@@ -61,7 +61,7 @@ const categories = [
     key: 'incomplete-names',
     title: 'Incomplete Names',
     icon: 'badge',
-    filterRule: 'IncompleteNames',
+    filterRule: 'MissingPrimaryNameParts',
     values: [],
   },
   {
