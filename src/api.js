@@ -403,7 +403,12 @@ async function apiPutPost(
     if (resp.status === 403) {
       throw new Error('Not authorized')
     }
-    if (resp.status !== 201 && resp.status !== 200 && resp.status !== 202) {
+    if (
+      resp.status !== 201 &&
+      resp.status !== 200 &&
+      resp.status !== 202 &&
+      resp.status !== 204
+    ) {
       throw new Error(
         resJson?.error?.message || resp.statusText || `Error ${resp.status}`
       )
@@ -826,7 +831,12 @@ export async function apiPutPostDeleteNew(
     if (resp.status === 403) {
       throw new Error('Not authorized')
     }
-    if (resp.status !== 201 && resp.status !== 200 && resp.status !== 202) {
+    if (
+      resp.status !== 201 &&
+      resp.status !== 200 &&
+      resp.status !== 202 &&
+      resp.status !== 204
+    ) {
       throw new Error(
         resJson?.error?.message || resp.statusText || `Error ${resp.status}`
       )

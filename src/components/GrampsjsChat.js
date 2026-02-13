@@ -178,7 +178,14 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
 
   async _handleDeleteConversation(e) {
     const {id} = e.detail
-    await this.appState.apiDelete(`/api/conversations/${id}/`)
+    const data = await this.appState.apiDelete(`/api/conversations/${id}/`)
+    if (data?.error) {
+      this.messages = [
+        ...this.messages,
+        {role: 'error', content: this._(data.error || 'An error occurred')},
+      ]
+      return
+    }
 
     this.conversations = this.conversations.filter(c => c.id !== id)
 

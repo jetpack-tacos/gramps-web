@@ -193,6 +193,11 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
       const response = await this.appState.apiGet(
         '/api/shared/?page=1&pagesize=10'
       )
+      if (response?.error) {
+        this.discoveries = []
+        this.error = response.error
+        return
+      }
       const discoveries = response?.data?.data || response?.data || []
       this.discoveries = Array.isArray(discoveries) ? discoveries : []
     } catch (err) {

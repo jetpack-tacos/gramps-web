@@ -189,20 +189,31 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
       nugget.target_gramps_id !== '[TREE]' &&
       nugget.target_gramps_id !== 'TREE'
 
-    return html`
-      <div
-        class="nugget ${hasValidTarget ? 'clickable' : ''}"
-        @click="${hasValidTarget ? () => this._handleNuggetClick(nugget) : null}"
-        @keydown="${hasValidTarget
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                this._handleNuggetClick(nugget)
-              }
+    if (hasValidTarget) {
+      return html`
+        <div
+          class="nugget clickable"
+          @click="${() => this._handleNuggetClick(nugget)}"
+          @keydown="${e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              this._handleNuggetClick(nugget)
             }
-          : null}"
-        role="${hasValidTarget ? 'button' : 'presentation'}"
-        tabindex=${hasValidTarget ? 0 : -1}
-      >
+          }}"
+          role="button"
+          tabindex="0"
+        >
+          <div class="nugget-content">
+            <span class="nugget-icon"
+              >${renderIconSvg(mdiAutoFix, 'var(--md-sys-color-primary)')}</span
+            >
+            ${nugget.content}
+          </div>
+        </div>
+      `
+    }
+
+    return html`
+      <div class="nugget" role="presentation">
         <div class="nugget-content">
           <span class="nugget-icon"
             >${renderIconSvg(mdiAutoFix, 'var(--md-sys-color-primary)')}</span
@@ -219,6 +230,11 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
 
     try {
       const response = await this.appState.apiGet('/api/nuggets/?limit=5')
+      if (response?.error) {
+        this.nuggets = []
+        this.error = response.error
+        return
+      }
       // The response is double-nested: {data: {data: [...]}}
       const nuggets = response?.data?.data || []
       this.nuggets = Array.isArray(nuggets) ? nuggets : []
@@ -237,6 +253,14 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
 
     try {
       const data = await this.appState.apiPost('/api/nuggets/')
+      if (data?.error) {
+        this.error = data.error
+        fireEvent(this, 'grampsjs:notification', {
+          message: this._('Failed to generate discoveries'),
+          error: true,
+        })
+        return
+      }
       if (data && data.data) {
         // After generation, reload to get fresh nuggets
         await this._loadNuggets()
@@ -262,7 +286,11 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
   async _handleNuggetClick(nugget) {
     // Track the click
     try {
-      await this.appState.apiPost(`/api/nuggets/${nugget.id}/`)
+      const data = await this.appState.apiPost(`/api/nuggets/${nugget.id}/`)
+      if (data?.error) {
+        // eslint-disable-next-line no-console
+        console.error('Error tracking nugget click:', data.error)
+      }
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error tracking nugget click:', err)
