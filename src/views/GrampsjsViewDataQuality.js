@@ -83,7 +83,7 @@ const categories = [
     title: 'No Sources',
     icon: 'menu_book',
     filterRule: 'HasSourceCount',
-    values: ['0'],
+    values: ['0', 'equal to'],
   },
 ]
 
