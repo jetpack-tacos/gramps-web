@@ -84,7 +84,6 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       _placeFilters: {type: Object},
       _year: {type: Number},
       _yearSpan: {type: Number},
-      _currentLayer: {type: String},
       _minYear: {type: Number},
       _hiddenOverlaysHandles: {type: Array},
     }
@@ -103,9 +102,8 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
     this._valueSearch = ''
     this._bounds = {}
     this._placeFilters = {}
-    this._year = -1
-    this._yearSpan = -1
-    this._currentLayer = ''
+    this._year = new Date().getFullYear()
+    this._yearSpan = 50
     this._minYear = 1500
   }
 
@@ -123,7 +121,6 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
         year="${this._year}"
         mapid="map-mapview"
         .overlays="${this._getOverlaysForLayerSwitcher()}"
-        @map:layerchange="${this._handleLayerChange}"
         @map:moveend="${this._handleMoveEnd}"
         @map:overlay-toggle="${this._handleOverlayToggle}"
         id="map"
@@ -143,7 +140,6 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       >
       <grampsjs-map-time-slider
         min="${this._minYear}"
-        ?filterMap="${this._currentLayer === 'ohm'}"
         @timeslider:change="${this._handleTimeSliderChange}"
         .appState="${this.appState}"
       ></grampsjs-map-time-slider>
@@ -166,10 +162,6 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
         .appState="${this.appState}"
       ></grampsjs-place-box>
     `
-  }
-
-  _handleLayerChange(e) {
-    this._currentLayer = e.detail.style
   }
 
   update(changed) {

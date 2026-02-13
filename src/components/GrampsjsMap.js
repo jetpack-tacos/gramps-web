@@ -17,8 +17,6 @@ import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
 const defaultConfig = {
   mapOhmStyle: 'https://www.openhistoricalmap.org/map-styles/main/main.json',
-  mapBaseStyleLight: 'https://tiles.openfreemap.org/styles/liberty',
-  mapBaseStyleDark: 'https://tiles.openfreemap.org/styles/dark',
 }
 
 const {maplibregl} = window
@@ -44,13 +42,14 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _renderLayerSwitcher() {
+    if (this.overlays.length === 0) {
+      return html`<div></div>`
+    }
     return html`
       <div class="map-layerswitcher">
         <grampsjs-map-layer-switcher
           .appState="${this.appState}"
           .overlays="${this.overlays}"
-          .currentStyle="${this._currentStyle}"
-          @map:layerchange="${this._onStyleChange}"
           @map:overlay-toggle="${this._handleOverlayToggle}"
         ></grampsjs-map-layer-switcher>
       </div>
@@ -73,7 +72,6 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       overlays: {type: Array},
       layerSwitcher: {type: Boolean},
       _map: {type: Object},
-      _currentStyle: {type: String},
     }
   }
 
@@ -92,24 +90,11 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
     this.longMax = 0
     this.overlays = []
     this.layerSwitcher = false
-    this._currentStyle = 'base'
-    this._mediaQuery = undefined
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    this._mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    this._mediaQuery.addEventListener('change', this._onThemeChange)
-  }
-
-  disconnectedCallback() {
-    this._mediaQuery?.removeEventListener('change', this._onThemeChange)
-    super.disconnectedCallback()
   }
 
   firstUpdated() {
     const mapel = this.shadowRoot.getElementById(this.mapid)
-    const styleUrl = this._getStyleUrl(this._currentStyle)
+    const styleUrl = this._getStyleUrl()
     this._map = new maplibregl.Map({
       container: mapel,
       style: styleUrl,
@@ -201,29 +186,6 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
     }
   }
 
-  _onStyleChange(e) {
-    const {style} = e.detail
-    this._currentStyle = style
-    this._handleStyleChange(style)
-  }
-
-  _onThemeChange = () => {
-    this._handleStyleChange(this._currentStyle)
-  }
-
-  _handleStyleChange(style) {
-    const styleUrl = this._getStyleUrl(style)
-    this._map.setStyle(styleUrl)
-    if (this._currentStyle === 'ohm') {
-      this._map.on('styledata', () => {
-        this._map.filterByDate(`${this.year}`)
-        this._reAddOverlays()
-      })
-    } else {
-      this._reAddOverlays()
-    }
-  }
-
   _reAddOverlays() {
     const overlays = this._slottedChildren.filter(
       el => el.tagName === 'GRAMPSJS-MAP-OVERLAY'
@@ -234,10 +196,9 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  _getStyleUrl(style) {
+  _getStyleUrl() {
     const config = {...defaultConfig, ...window.grampsjsConfig}
-    const mapBaseStyle = config.mapBaseStyleLight
-    return style === 'base' ? mapBaseStyle : config.mapOhmStyle
+    return config.mapOhmStyle
   }
 }
 

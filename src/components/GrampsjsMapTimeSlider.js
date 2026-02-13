@@ -4,7 +4,6 @@ import '@material/web/iconbutton/icon-button.js'
 import '@material/web/icon/icon.js'
 import '@material/web/menu/menu'
 import '@material/web/menu/menu-item'
-import '@material/web/switch/switch'
 
 import {mdiCog} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
@@ -79,16 +78,14 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
       value: {type: Number},
       span: {type: Number},
       min: {type: Number},
-      filterMap: {type: Boolean},
     }
   }
 
   constructor() {
     super()
     this.min = 1500
-    this.value = new Date().getFullYear() - 50
-    this.span = -50
-    this.filterMap = false
+    this.value = new Date().getFullYear()
+    this.span = 50
   }
 
   render() {
@@ -96,26 +93,19 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
       <div id="container">
         <md-slider
           @input="${this._handleInput}"
-          ?disabled="${!this.filterMap && this.span < 0}"
           labeled
           min="${this.min}"
           max="${new Date().getFullYear()}"
           value="${this.value}"
         ></md-slider>
         <div class="date">
-          ${!this.filterMap && this.span < 0
-            ? ''
-            : html` <span class="year">${this.value}</span>`}
+          <span class="year">${this.value}</span>
           ${this.span > 0
             ? html`&pm; <span class="span">${this.span}</span>`
             : ''}
         </div>
         <div class="control">
-          <md-icon-button
-            id="span-button"
-            @click="${this._handleSpanClick}"
-            ?disabled="${this.span < 0}"
-          >
+          <md-icon-button id="span-button" @click="${this._handleSpanClick}">
             <grampsjs-tooltip for="span-button" .appState="${this.appState}"
               >${this._('Span')}</grampsjs-tooltip
             >
@@ -124,14 +114,6 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
             >
           </md-icon-button>
         </div>
-        <md-switch
-          id="filter-switch"
-          @input="${this._handleSwitch}"
-          ?selected="${this.span > 0}"
-        ></md-switch>
-        <grampsjs-tooltip for="filter-switch" .appState="${this.appState}"
-          >${this._('Toggle time filter for places')}</grampsjs-tooltip
-        >
       </div>
       <md-menu
         positioning="fixed"
@@ -160,14 +142,6 @@ class GrampsjsMapTimeSlider extends GrampsjsAppStateMixin(LitElement) {
 
   connectedCallback() {
     super.connectedCallback()
-    this._fireEvent()
-  }
-
-  _handleSwitch() {
-    const el = this.renderRoot.querySelector('md-switch')
-    if (el.selected !== this.span > 0) {
-      this.span = -this.span
-    }
     this._fireEvent()
   }
 
