@@ -525,30 +525,7 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       languageCoordinates[locale] ||
       languageCoordinates[localePrefix] ||
       osloCoordinates
-    if (this._dataPlaces.length === 0) {
-      return defaultCenter
-    }
-    let x = 0
-    let y = 0
-    let n = 0
-    for (let i = 0; i < this._dataPlaces.length; i += 1) {
-      const p = this._dataPlaces[i]
-      if (
-        p?.profile?.lat !== undefined &&
-        p?.profile?.lat !== null &&
-        (p?.profile?.lat !== 0 || p?.profile?.long !== 0)
-      ) {
-        x += p.profile.lat
-        y += p.profile.long
-        n += 1
-      }
-    }
-    if (n === 0) {
-      return defaultCenter
-    }
-    x /= n
-    y /= n
-    return [x, y]
+    return defaultCenter
   }
 
   handleUpdateStaleData() {
