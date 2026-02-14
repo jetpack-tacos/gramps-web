@@ -1,11 +1,12 @@
 import {html, css, LitElement} from 'lit'
 import '@material/web/button/text-button'
-import '@material/web/icon/icon.js'
 import '@material/web/iconbutton/icon-button.js'
 import '@material/web/progress/circular-progress'
+import {mdiDelete} from '@mdi/js'
 
 import {sharedStyles} from '../SharedStyles.js'
 import {getTreeId} from '../api.js'
+import {renderIconSvg} from '../icons.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks} from '../util.js'
 
@@ -175,7 +176,12 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
                   aria-label="${this._('Dismiss')}"
                   @click=${() => this._dismissDiscovery(discovery.id)}
                 >
-                  <md-icon>delete</md-icon>
+                  <md-icon
+                    >${renderIconSvg(
+                      mdiDelete,
+                      'var(--md-sys-color-on-surface-variant)'
+                    )}</md-icon
+                  >
                 </md-icon-button>
               </div>
             </div>
