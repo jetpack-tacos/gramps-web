@@ -17,7 +17,7 @@ import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
 const defaultConfig = {
   mapOhmStyle: 'https://www.openhistoricalmap.org/map-styles/main/main.json',
-  mapProjection: 'globe',
+  mapProjection: 'mercator',
   mapEnableGlobeControl: true,
   mapMaxParallelImageRequests: 24,
   mapMaxTileCacheZoomLevels: 8,

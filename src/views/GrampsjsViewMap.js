@@ -322,8 +322,31 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   _handleMoveEnd(e) {
-    // MapLibre GL JS provides bounds in format [west, south, east, north]
+    // MapLibre GL JS returns a LngLatBounds object
     this._bounds = e.detail.bounds
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  _getPlaceCoordinates(place) {
+    const lat = parseFloat(place?.profile?.lat)
+    const lng = parseFloat(place?.profile?.long)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null
+    }
+    if (lat === 0 && lng === 0) {
+      return null
+    }
+    return {lat, lng}
+  }
+
+  _isPlaceVisibleInBounds(coords) {
+    if (!coords) {
+      return false
+    }
+    if (!this._bounds || typeof this._bounds.contains !== 'function') {
+      return false
+    }
+    return this._bounds.contains([coords.lng, coords.lat])
   }
 
   _renderMarkers() {
@@ -335,31 +358,36 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
         !filteredHandles.includes(place.handle)
     )
     const places = [...this._filteredPlaces, ...highlightedFilteredPlaces]
-    return places.map(obj => {
-      if (
-        obj?.profile?.lat === null ||
-        obj?.profile?.lat === undefined ||
-        Number.isNaN(parseFloat(obj?.profile?.lat)) ||
-        obj?.profile?.long === null ||
-        obj?.profile?.long === undefined ||
-        Number.isNaN(parseFloat(obj?.profile?.long)) ||
-        (obj?.profile?.lat === 0 && obj?.profile?.long === 0)
-      ) {
-        return html``
-      }
-      const highlighted = this._handlesHighlight.includes(obj.handle)
-      return html` <grampsjs-map-marker
-        latitude="${obj.profile.lat}"
-        longitude="${obj.profile.long}"
-        size="${highlighted ? 48 : 32}"
-        opacity="${!highlighted && this._handlesHighlight.length > 0
-          ? 0.55
-          : 0.9}"
-        popupLabel="<a href='place/${obj.profile.gramps_id}'>${obj.profile
-          .name}</a>"
-        @marker:clicked="${() => this._handleMarkerClick(obj)}"
-      ></grampsjs-map-marker>`
-    })
+    return places
+      .map(obj => {
+        const coords = this._getPlaceCoordinates(obj)
+        const highlighted = this._handlesHighlight.includes(obj.handle)
+        return {obj, coords, highlighted}
+      })
+      .filter(({coords, highlighted}) => {
+        if (!coords) {
+          return false
+        }
+        // Before initial bounds are known, only keep highlighted markers mounted.
+        if (highlighted) {
+          return true
+        }
+        return this._isPlaceVisibleInBounds(coords)
+      })
+      .map(
+        ({obj, coords, highlighted}) => html` <grampsjs-map-marker
+          latitude="${coords.lat}"
+          longitude="${coords.lng}"
+          size="${highlighted ? 48 : 32}"
+          opacity="${!highlighted && this._handlesHighlight.length > 0
+            ? 0.55
+            : 0.9}"
+          tooltipLabel="${obj.profile.name}"
+          popupLabel="<a href='place/${obj.profile.gramps_id}'>${obj.profile
+            .name}</a>"
+          @marker:clicked="${() => this._handleMarkerClick(obj)}"
+        ></grampsjs-map-marker>`
+      )
   }
 
   _applyPlaceFilter() {
