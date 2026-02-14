@@ -140,9 +140,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
     )
     this._map.on('load', () => {
       this._setProjection(config.mapProjection)
-      if (this.year > 0 && this._map.filterByDate) {
-        this._map.filterByDate(`${this.year}`)
-      }
+      this._applyDateFilter()
       if (this.latMin !== 0 || this.latMax !== 0) {
         this._map.fitBounds([
           [this.longMin, this.latMin],
@@ -150,6 +148,9 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
         ])
       }
       fireEvent(this, 'map:moveend', {bounds: this._map.getBounds()})
+    })
+    this._map.on('styledata', () => {
+      this._applyDateFilter()
     })
     this._map.on('moveend', () => {
       fireEvent(this, 'map:moveend', {bounds: this._map.getBounds()})
@@ -168,18 +169,8 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   updated(changed) {
-    if (
-      changed.has('year') &&
-      this.year > 0 &&
-      this._map &&
-      this._map.isStyleLoaded &&
-      this._map.isStyleLoaded()
-    ) {
-      try {
-        this._map.filterByDate(`${this.year}`)
-      } catch (e) {
-        // Ignore errors if filterByDate fails (e.g. style does not support it)
-      }
+    if (changed.has('year') && this.year > 0 && this._map) {
+      this._applyDateFilter()
       return
     }
     if (
@@ -253,6 +244,35 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       return
     }
     this._map.setProjection({type})
+  }
+
+  _getFilterDate() {
+    const year = Number(this.year)
+    if (!Number.isFinite(year) || year <= 0) {
+      return null
+    }
+    const now = new Date()
+    if (year === now.getFullYear()) {
+      // Use real "today" for current year so present-day names render on first load.
+      return now
+    }
+    // For past/future years where only a year is selected, use mid-year to avoid edge effects.
+    return new Date(Date.UTC(year, 6, 1))
+  }
+
+  _applyDateFilter() {
+    if (!this._map || typeof this._map.filterByDate !== 'function') {
+      return
+    }
+    const date = this._getFilterDate()
+    if (!date) {
+      return
+    }
+    try {
+      this._map.filterByDate(date)
+    } catch (e) {
+      // Ignore errors if filterByDate fails (e.g. style does not support it)
+    }
   }
 }
 
