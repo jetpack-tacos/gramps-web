@@ -13,6 +13,7 @@ import {isDateBetweenYears, getGregorianYears} from '../util.js'
 import {GrampsjsStaleDataMixin} from '../mixins/GrampsjsStaleDataMixin.js'
 
 // This is used for initial map center in absence of places
+const osloCoordinates = [59.9139, 10.7522]
 const languageCoordinates = {
   ar: [25, 45], // Arabic - Approximate center of Arab countries
   bg: [43, 25], // Bulgarian - Approximate center of Bulgaria
@@ -22,7 +23,7 @@ const languageCoordinates = {
   da: [56, 10], // Danish - Approximate center of Denmark
   de: [51, 9], // German - Approximate center of Germany
   el: [39, 22], // Greek - Approximate center of Greece
-  en: [52, -1], // English - Approximate center of England, United Kingdom
+  en: osloCoordinates, // English - Oslo, Norway
   eo: [41, 0], // Esperanto - Approximate center of Europe
   es: [40, -4], // Spanish - Approximate center of Spain
   fi: [64, 26], // Finnish - Approximate center of Finland
@@ -37,9 +38,9 @@ const languageCoordinates = {
   ja: [36, 138], // Japanese - Approximate center of Japan
   lt: [55, 24], // Lithuanian - Approximate center of Lithuania
   mk: [42, 21], // Macedonian - Approximate center of North Macedonia
-  nb: [62, 10], // Norwegian Bokmål - Approximate center of Norway
+  nb: osloCoordinates, // Norwegian Bokmål - Oslo, Norway
   nl: [52, 5], // Dutch - Approximate center of Netherlands
-  nn: [62, 10], // Norwegian Nynorsk - Approximate center of Norway
+  nn: osloCoordinates, // Norwegian Nynorsk - Oslo, Norway
   pl: [52, 20], // Polish - Approximate center of Poland
   pt: [39, -8], // Portuguese - Approximate center of Portugal
   ro: [46, 25], // Romanian - Approximate center of Romania
@@ -518,9 +519,14 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
   }
 
   _getMapCenter() {
+    const locale = this.appState.i18n.lang || 'en'
+    const localePrefix = locale.split('-')[0]
+    const defaultCenter =
+      languageCoordinates[locale] ||
+      languageCoordinates[localePrefix] ||
+      osloCoordinates
     if (this._dataPlaces.length === 0) {
-      const locale = this.appState.i18n.lang || 'en'
-      return languageCoordinates[locale] || [0, 0]
+      return defaultCenter
     }
     let x = 0
     let y = 0
@@ -538,8 +544,7 @@ export class GrampsjsViewMap extends GrampsjsStaleDataMixin(GrampsjsView) {
       }
     }
     if (n === 0) {
-      const locale = this.appState.i18n.lang || 'en'
-      return languageCoordinates[locale] || [0, 0]
+      return defaultCenter
     }
     x /= n
     y /= n
