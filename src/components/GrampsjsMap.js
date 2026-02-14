@@ -15,14 +15,34 @@ import {fireEvent} from '../util.js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
+const defaultStaticRasterStyle = {
+  version: 8,
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    {
+      id: 'osm',
+      type: 'raster',
+      source: 'osm',
+    },
+  ],
+}
+
 const defaultConfig = {
-  mapOhmStyle: 'https://www.openhistoricalmap.org/map-styles/main/main.json',
+  mapStyle: defaultStaticRasterStyle,
   mapProjection: 'mercator',
   mapEnableGlobeControl: true,
   mapMaxParallelImageRequests: 24,
   mapMaxTileCacheZoomLevels: 8,
   mapFadeDuration: 120,
   mapCancelPendingTileRequestsWhileZooming: false,
+  mapEnableDateFiltering: false,
 }
 
 const {maplibregl} = window
@@ -96,23 +116,24 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
     this.longMax = 0
     this.overlays = []
     this.layerSwitcher = false
+    this._mapConfig = {...defaultConfig}
   }
 
   firstUpdated() {
     const mapel = this.shadowRoot.getElementById(this.mapid)
-    const config = this._getMapConfig()
-    const styleUrl = this._getStyleUrl(config)
-    this._configureGlobalMaplibreOptions(config)
+    this._mapConfig = this._getMapConfig()
+    const styleUrl = this._getStyleUrl(this._mapConfig)
+    this._configureGlobalMaplibreOptions(this._mapConfig)
     this._map = new maplibregl.Map({
       container: mapel,
       style: styleUrl,
       center: [this.longitude, this.latitude],
       zoom: this.zoom,
       attributionControl: true,
-      fadeDuration: config.mapFadeDuration,
-      maxTileCacheZoomLevels: config.mapMaxTileCacheZoomLevels,
+      fadeDuration: this._mapConfig.mapFadeDuration,
+      maxTileCacheZoomLevels: this._mapConfig.mapMaxTileCacheZoomLevels,
       cancelPendingTileRequestsWhileZooming:
-        config.mapCancelPendingTileRequestsWhileZooming,
+        this._mapConfig.mapCancelPendingTileRequestsWhileZooming,
     })
     this._map.on('click', e => {
       const mapContainer = this._map.getContainer()
@@ -126,7 +147,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       mapContainer.dispatchEvent(customEvent)
     })
     this._map.addControl(new maplibregl.NavigationControl(), 'bottom-right')
-    this._addGlobeControl(config)
+    this._addGlobeControl(this._mapConfig)
     // Add geolocate control to the map controller
     this._map.addControl(
       new maplibregl.GeolocateControl({
@@ -139,7 +160,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
       'bottom-right'
     )
     this._map.on('load', () => {
-      this._setProjection(config.mapProjection)
+      this._setProjection(this._mapConfig.mapProjection)
       this._applyDateFilter()
       if (this.latMin !== 0 || this.latMax !== 0) {
         this._map.fitBounds([
@@ -208,7 +229,7 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
 
   // eslint-disable-next-line class-methods-use-this
   _getStyleUrl(config = this._getMapConfig()) {
-    return config.mapOhmStyle
+    return config.mapStyle || config.mapOhmStyle
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -261,6 +282,9 @@ class GrampsjsMap extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _applyDateFilter() {
+    if (!this._mapConfig?.mapEnableDateFiltering) {
+      return
+    }
     if (!this._map || typeof this._map.filterByDate !== 'function') {
       return
     }
