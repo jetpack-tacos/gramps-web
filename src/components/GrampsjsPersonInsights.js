@@ -113,12 +113,6 @@ class GrampsjsPersonInsights extends GrampsjsAppStateMixin(LitElement) {
 
     // Has cached insight
     if (this._insight) {
-      console.log('[Insights] Rendering with insight:', {
-        has_insight: !!this._insight,
-        has_content: !!this._insight.content,
-        content_length: this._insight.content?.length || 0,
-        content_preview: this._insight.content?.substring(0, 100),
-      })
       return html`
         <div class="ai-card">
           <div class="ai-card-header">
@@ -166,30 +160,15 @@ class GrampsjsPersonInsights extends GrampsjsAppStateMixin(LitElement) {
       const insight = unwrapApiData(response, null)
       this._checked = true
 
-      console.log('[Insights] GET response:', {
-        has_data: !!response,
-        has_data_data: !!response?.data,
-        data_keys: response ? Object.keys(response) : [],
-        content_exists: !!insight?.content,
-        content_length: insight?.content?.length || 0,
-        content_type: typeof insight?.content,
-        content_preview: insight?.content?.substring(0, 100),
-      })
-
       if (insight && typeof insight === 'object') {
         this._insight = insight
-        console.log('[Insights] Set _insight, content check:', {
-          insight_content_exists: !!this._insight.content,
-          insight_content_length: this._insight.content?.length || 0,
-        })
       } else if (response?.error) {
         // 404 — no insight yet, that's fine
         this._insight = null
       }
-    } catch (e) {
+    } catch {
       this._checked = true
       this._insight = null
-      console.error('[Insights] GET error:', e)
     }
   }
 
@@ -209,29 +188,14 @@ class GrampsjsPersonInsights extends GrampsjsAppStateMixin(LitElement) {
 
       this._loading = false
 
-      console.log('[Insights] POST response:', {
-        has_data: !!response,
-        has_data_data: !!response?.data,
-        data_keys: response ? Object.keys(response) : [],
-        content_length: insight?.content?.length || 0,
-      })
-      console.log(
-        '[Insights] POST full data:',
-        JSON.stringify(response).substring(0, 1000)
-      )
-
       if (insight && typeof insight === 'object') {
-        console.log(
-          '[Insights] Setting insight, content preview:',
-          insight.content?.substring(0, 200)
-        )
         this._insight = insight
       } else if (response?.error) {
         this._error = response.error || this._('An error occurred')
       } else {
         this._error = this._('An error occurred')
       }
-    } catch (e) {
+    } catch {
       this._loading = false
       this._error = this._('An error occurred')
     }

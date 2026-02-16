@@ -6,16 +6,23 @@ const TIME_GROUP_ORDER = [
   'Older',
 ]
 
+const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24
+
 export function getConversationTimeGroup(dateStr, now = new Date()) {
   const date = new Date(dateStr)
   if (Number.isNaN(date.getTime())) {
     return 'Older'
   }
 
-  const diffMs = now - date
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const nowUtcDay = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+  const dateUtcDay = Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  )
+  const diffDays = Math.floor((nowUtcDay - dateUtcDay) / MILLISECONDS_PER_DAY)
 
-  if (diffDays === 0) return 'Today'
+  if (diffDays <= 0) return 'Today'
   if (diffDays === 1) return 'Yesterday'
   if (diffDays <= 7) return 'This Week'
   if (diffDays <= 30) return 'This Month'

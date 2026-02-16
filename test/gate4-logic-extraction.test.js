@@ -8,7 +8,10 @@ import {
 } from '../src/chatApiHelpers.js'
 import {extractPersonIdsFromMarkdown} from '../src/chatMessageUtils.js'
 import {buildExternalSearchData} from '../src/personExternalSearchData.js'
-import {groupConversationsByTime} from '../src/chatSidebarUtils.js'
+import {
+  getConversationTimeGroup,
+  groupConversationsByTime,
+} from '../src/chatSidebarUtils.js'
 import {
   appendDismissedDiscoveryId,
   loadDismissedDiscoveries,
@@ -179,6 +182,19 @@ describe('Gate 4 Logic Extraction', () => {
       'This Month',
     ])
     expect(grouped[0].items[0].id).to.equal('today')
+  })
+
+  it('groups timestamps by calendar day and treats future times as today', () => {
+    const now = new Date('2026-02-16T00:05:00')
+    expect(getConversationTimeGroup('2026-02-15T23:55:00', now)).to.equal(
+      'Yesterday'
+    )
+    expect(getConversationTimeGroup('2026-02-16T23:55:00', now)).to.equal(
+      'Today'
+    )
+    expect(getConversationTimeGroup('2026-02-17T00:01:00', now)).to.equal(
+      'Today'
+    )
   })
 
   it('shares discoveries using extracted payload/api helper', async () => {
