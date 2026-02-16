@@ -57,8 +57,8 @@ class GrampsjsMapLayerSwitcher extends GrampsjsAppStateMixin(LitElement) {
   render() {
     return html`
       <div
-        class="map-layer-switcher"
-        style="position: relative;
+        class="map-layer-switcher u-pos-relative"
+        style="
       width: fit-content;
       bottom: 46px;
       left: 10px;
@@ -82,7 +82,8 @@ class GrampsjsMapLayerSwitcher extends GrampsjsAppStateMixin(LitElement) {
         <md-menu
           id="layer-menu"
           anchor="layer-button"
-          style="z-index: 1; position: relative;"
+          class="u-pos-relative"
+          style="z-index: 1;"
           positioning="popover"
         >
           ${this.overlays.map(

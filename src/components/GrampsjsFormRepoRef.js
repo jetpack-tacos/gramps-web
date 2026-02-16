@@ -18,12 +18,11 @@ class GrampsjsFormRepoRef extends GrampsjsObjectForm {
     return html`
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="repository"
         .appState="${this.appState}"
         id="repository-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
 
       <h4 class="label">${this._('Call Number')}</h4>

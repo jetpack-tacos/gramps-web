@@ -12,12 +12,11 @@ class GrampsjsFormMediaRef extends GrampsjsObjectForm {
     return html`
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="media"
         .appState="${this.appState}"
         id="media-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
     `
   }

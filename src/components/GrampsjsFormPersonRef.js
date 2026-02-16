@@ -11,12 +11,11 @@ class GrampsjsFormPersonRef extends GrampsjsObjectForm {
     return html`
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="person"
         .appState="${this.appState}"
         id="person-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
     `
   }

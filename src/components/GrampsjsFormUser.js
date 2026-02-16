@@ -113,7 +113,7 @@ class GrampsjsFormUser extends GrampsjsAppStateMixin(LitElement) {
           fixedMenuPosition
           @selected="${this._handleRoleChange}"
           id="role"
-          style="width: 100%;"
+          class="u-w-100"
         >
           ${Object.keys(userRoles)
             .map(Number)

@@ -39,7 +39,7 @@ class GrampsjsFormEditEventDetails extends GrampsjsObjectForm {
       <p>
         <grampsjs-form-select-object-list
           fixedMenuPosition
-          style="min-height: 300px;"
+          class="edit u-min-h-300"
           objectType="place"
           .appState="${this.appState}"
           id="place"
@@ -53,7 +53,6 @@ class GrampsjsFormEditEventDetails extends GrampsjsObjectForm {
                 },
               ]
             : []}"
-          class="edit"
         ></grampsjs-form-select-object-list>
       </p>
     `

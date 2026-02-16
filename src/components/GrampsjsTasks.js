@@ -199,7 +199,7 @@ class GrampsjsTasks extends GrampsjsAppStateMixin(LitElement) {
           @change="${this._handleSelectAll}"
           ?checked=${this._selected.length > 0}
         ></mwc-checkbox>
-        <div style="position: relative; display: inline-block;">
+        <div class="u-pos-relative-inline">
           <mwc-button
             id="prio-btn"
             outlined
@@ -220,7 +220,7 @@ class GrampsjsTasks extends GrampsjsAppStateMixin(LitElement) {
             <mwc-list-item>${this._('Low')}</mwc-list-item>
           </mwc-menu>
         </div>
-        <div style="position: relative; display: inline-block;">
+        <div class="u-pos-relative-inline">
           <mwc-button
             id="prio-btn"
             outlined

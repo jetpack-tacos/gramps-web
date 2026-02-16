@@ -190,6 +190,40 @@ export const sharedStyles = css`
     float: right;
   }
 
+  .u-min-h-300 {
+    min-height: 300px;
+  }
+
+  .u-w-100 {
+    width: 100%;
+  }
+
+  .u-clear-left {
+    clear: left;
+  }
+
+  .u-clear-both {
+    clear: both;
+  }
+
+  .u-pos-relative {
+    position: relative;
+  }
+
+  .u-pos-relative-inline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .u-hidden-absolute {
+    visibility: hidden;
+    position: absolute;
+  }
+
+  .u-pt-1em {
+    padding-top: 1em;
+  }
+
   mwc-icon.inline {
     vertical-align: middle;
     size: 0.8em;

@@ -184,7 +184,7 @@ class GrampsjsMapSearchbox extends GrampsjsAppStateMixin(LitElement) {
                       @click="${this._handleInput}"
                     ></mwc-icon-button>
                   `}
-              <div style="position: relative; display: inline-block;">
+              <div class="u-pos-relative-inline">
                 ${filterHasBadge
                   ? html`
                       <svg

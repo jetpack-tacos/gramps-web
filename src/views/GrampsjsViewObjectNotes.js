@@ -81,8 +81,7 @@ export class GrampsjsViewObjectNotes extends GrampsjsViewObjectsDetail {
 
   // eslint-disable-next-line class-methods-use-this
   renderLoading() {
-    const skeleton =
-      '<p><span class="skeleton" style="width:100%;">&nbsp;</span></p>'
+    const skeleton = '<p><span class="skeleton u-w-100">&nbsp;</span></p>'
     const skeletonNotes = Array(this.numberOfNotes)
       .fill()
       .map(

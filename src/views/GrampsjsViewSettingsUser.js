@@ -46,7 +46,7 @@ export class GrampsjsViewSettingsUser extends GrampsjsView {
           <dd>${this._(userRoles[this._userInfo?.role])}</dd>
         </div>
       </dl>
-      <div style="clear: both;"></div>
+      <div class="u-clear-both"></div>
 
       <h3>${this._('Select language')}</h3>
 

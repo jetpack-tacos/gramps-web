@@ -30,7 +30,7 @@ export class GrampsjsViewNewPlace extends GrampsjsViewNewObject {
         <mwc-textfield
           required
           validationMessage="${this._('This field is mandatory')}"
-          style="width:100%;"
+          class="u-w-100"
           @input="${this.handleName}"
           id="place-name"
         ></mwc-textfield>

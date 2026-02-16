@@ -18,12 +18,11 @@ class GrampsjsFormNoteRef extends GrampsjsObjectForm {
     return html`
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="note"
         .appState="${this.appState}"
         id="note-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
     `
   }

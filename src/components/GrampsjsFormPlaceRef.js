@@ -27,7 +27,7 @@ class GrampsjsFormPlaceRef extends GrampsjsObjectForm {
         <grampsjs-form-select-object-list
           fixedMenuPosition
           notDeletable
-          style="min-height: 300px;"
+          class="edit u-min-h-300"
           objectType="place"
           .objectsInitial="${this.data.ref
             ? [
@@ -41,7 +41,6 @@ class GrampsjsFormPlaceRef extends GrampsjsObjectForm {
           .appState="${this.appState}"
           id="place-select"
           label="${this._('Select')}"
-          class="edit"
         ></grampsjs-form-select-object-list>
       </p>
 

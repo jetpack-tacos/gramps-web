@@ -92,7 +92,7 @@ export class GrampsjsViewFanChart extends GrampsjsViewTreeChartBase {
       <grampsjs-tooltip for="btn-color" .appState="${this.appState}"
         >${this._('Color')}</grampsjs-tooltip
       >
-      <span style="position: relative">
+      <span class="u-pos-relative">
         <md-menu id="usage-menu" anchor="btn-color" skip-restore-focus>
           ${Object.keys(colors).map(
             color => html`

@@ -54,7 +54,7 @@ class GrampsjsTreeChart extends GrampsjsChartBase {
     return html`
       <div
         @pedigree:show-children="${this._handleShowChildren}"
-        style="position:relative;"
+        class="u-pos-relative"
       >
         <div id="container">${this.renderChart()}</div>
         ${this.renderChildrenMenu()}

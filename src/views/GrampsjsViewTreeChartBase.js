@@ -84,7 +84,7 @@ export class GrampsjsViewTreeChartBase extends GrampsjsView {
   }
 
   renderContent() {
-    return html`<div style="position: relative;">
+    return html`<div class="u-pos-relative">
       <div id="controls">${this.renderControls()}</div>
       <div id="chart">${this.renderChart()}</div>
     </div>`

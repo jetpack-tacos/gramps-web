@@ -18,12 +18,11 @@ class GrampsjsFormChildRef extends GrampsjsObjectForm {
     return html`
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="person"
         .appState="${this.appState}"
         id="child-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
       <grampsjs-form-select-type
         required

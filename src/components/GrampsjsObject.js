@@ -427,7 +427,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
 
       ${this.renderProfile()}
 
-      <div style="clear:left;"></div>
+      <div class="u-clear-left"></div>
 
       ${this.renderInsights()}
 

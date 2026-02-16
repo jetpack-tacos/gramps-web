@@ -13,12 +13,11 @@ class GrampsjsFormCitation extends GrampsjsObjectForm {
       <grampsjs-form-select-object-list
         notDeletable
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="edit u-min-h-300"
         objectType="citation"
         .appState="${this.appState}"
         id="citation-select"
         label="${this._('Select')}"
-        class="edit"
       ></grampsjs-form-select-object-list>
     `
   }

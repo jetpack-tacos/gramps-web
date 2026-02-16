@@ -65,7 +65,7 @@ export class GrampsjsEvent extends GrampsjsObject {
           `
         : ''}
 
-      <dl style="clear:left;">
+      <dl class="u-clear-left">
         ${this.data?.profile?.date || this.edit
           ? html`
               <div>

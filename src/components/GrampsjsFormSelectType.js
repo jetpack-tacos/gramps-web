@@ -106,7 +106,7 @@ class GrampsjsFormSelectType extends GrampsjsAppStateMixin(LitElement) {
   #renderLoading() {
     return html`
       <md-filled-select
-        style="width:100%"
+        class="u-w-100"
         label="${this._('Loading items...')}"
         disabled
       ></md-filled-select>
@@ -118,7 +118,7 @@ class GrampsjsFormSelectType extends GrampsjsAppStateMixin(LitElement) {
       ${!this._hasCustomType
         ? html`
             <md-filled-select
-              style="width:100%"
+              class="u-w-100"
               ?disabled="${this.disabled}"
               ?error="${this.#error}"
               error-text="${this._('This field is mandatory')}"
@@ -144,7 +144,7 @@ class GrampsjsFormSelectType extends GrampsjsAppStateMixin(LitElement) {
           `
         : html`
             <md-filled-text-field
-              style="width:100%"
+              class="u-w-100"
               ?disabled="${this.disabled}"
               ?error="${this.#error}"
               error-text="${this._('This field is mandatory')}"

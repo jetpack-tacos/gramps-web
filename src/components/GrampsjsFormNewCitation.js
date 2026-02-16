@@ -32,7 +32,7 @@ class GrampsjsFormNewCitation extends GrampsjsObjectForm {
       <h4 class="label">${this._('Source')}</h4>
       <grampsjs-form-select-object-list
         fixedMenuPosition
-        style="min-height: 300px;"
+        class="u-min-h-300"
         id="source"
         objectType="source"
         .appState="${this.appState}"

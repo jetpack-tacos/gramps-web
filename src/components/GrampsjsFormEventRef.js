@@ -32,12 +32,11 @@ class GrampsjsFormEventRef extends GrampsjsObjectForm {
         : html`
             <grampsjs-form-select-object-list
               fixedMenuPosition
-              style="min-height: 300px;"
+              class="edit u-min-h-300"
               objectType="event"
               .appState="${this.appState}"
               id="event-select"
               label="${this._('Select')}"
-              class="edit"
               .data="${this.data}"
             ></grampsjs-form-select-object-list>
           `}

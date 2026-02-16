@@ -178,7 +178,7 @@ class GrampsjsFormSelectDate extends GrampsjsAppStateMixin(LitElement) {
       <input
         type="date"
         id="input-date1"
-        style="visibility: hidden; position: absolute;"
+        class="u-hidden-absolute"
         @change="${this.handleDate1}"
       >
       </input>
@@ -248,7 +248,7 @@ class GrampsjsFormSelectDate extends GrampsjsAppStateMixin(LitElement) {
       <input
         type="date"
         id="input-date2"
-        style="visibility: hidden; position: absolute;"
+        class="u-hidden-absolute"
         @change="${this.handleDate2}"
       >
       </input>

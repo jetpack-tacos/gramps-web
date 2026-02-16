@@ -29,7 +29,7 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
       <p>
         <grampsjs-form-select-object-list
           fixedMenuPosition
-          style="min-height: 300px;"
+          class="edit u-min-h-300"
           objectType="person"
           .appState="${this.appState}"
           id="person-select"
@@ -43,7 +43,6 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
                 },
               ]
             : []}"
-          class="edit"
         ></grampsjs-form-select-object-list>
       </p>
 
@@ -66,7 +65,7 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
         <grampsjs-form-select-object-list
           multiple
           fixedMenuPosition
-          style="min-height: 300px;"
+          class="edit u-min-h-300"
           objectType="citation"
           .appState="${this.appState}"
           id="personref-citation-select"
@@ -79,7 +78,6 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
                 handle,
               }))
             : []}"
-          class="edit"
         ></grampsjs-form-select-object-list>
       </p>
 
@@ -88,7 +86,7 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
         <grampsjs-form-select-object-list
           multiple
           fixedMenuPosition
-          style="min-height: 300px;"
+          class="edit u-min-h-300"
           objectType="note"
           .appState="${this.appState}"
           id="personref-note-select"
@@ -100,7 +98,6 @@ class GrampsjsFormEditAssociation extends GrampsjsObjectForm {
                 handle,
               }))
             : []}"
-          class="edit"
         ></grampsjs-form-select-object-list>
       </p>
     `

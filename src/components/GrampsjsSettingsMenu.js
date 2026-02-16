@@ -61,7 +61,7 @@ class GrampsjsSettingsMenu extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-      <div style="position: relative;">
+      <div class="u-pos-relative">
         <mwc-icon-button
           icon="account_circle"
           @click="${this._handleClickSettings}"

@@ -91,7 +91,7 @@ class GrampsjsFormEditLatLong extends GrampsjsObjectForm {
           ></grampsjs-form-string>
         </div>
       </div>
-      <div style="clear:left; height: 20px;"></div>
+      <div class="u-clear-left" style="height: 20px;"></div>
       <div>
         <div style="width:calc(100% - 60px);float:left;">
           <grampsjs-form-string

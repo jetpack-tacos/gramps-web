@@ -44,8 +44,7 @@ export class GrampsjsConnectedNote extends GrampsjsConnectedComponent {
 
   // eslint-disable-next-line class-methods-use-this
   renderLoading() {
-    const skeleton =
-      '<p><span class="skeleton" style="width:100%;">&nbsp;</span></p>'
+    const skeleton = '<p><span class="skeleton u-w-100">&nbsp;</span></p>'
     return html` <grampsjs-note-content
       framed
       content="${skeleton}"

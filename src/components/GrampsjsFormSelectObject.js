@@ -74,7 +74,7 @@ class GrampsjsFormSelectObject extends GrampsjsAppStateMixin(LitElement) {
 
   render() {
     return html`
-      <div style="position:relative;">
+      <div class="u-pos-relative">
         <mwc-button
           raised
           ?disabled="${this.disabled}"
@@ -100,9 +100,8 @@ class GrampsjsFormSelectObject extends GrampsjsAppStateMixin(LitElement) {
               outlined
               icon="search"
               id="textfield"
-              class="rounded"
+              class="rounded u-w-100"
               @input="${debounce(() => this._handleInput(), 500)}"
-              style="width:100%;"
             ></mwc-textfield>
           </div>
           <grampsjs-search-result-list

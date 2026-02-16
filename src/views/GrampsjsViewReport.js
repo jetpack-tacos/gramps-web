@@ -50,7 +50,7 @@ export class GrampsjsViewReport extends GrampsjsView {
         ></mwc-icon-button>
         ${this._(this.data.name)}
       </h2>
-      <dl style="clear:left;">
+      <dl class="u-clear-left">
         <div>
           <dt>${this._('Description')}</dt>
           <dd>${this._(this.data.description)}</dd>
@@ -64,7 +64,7 @@ export class GrampsjsViewReport extends GrampsjsView {
           <dd>${this.data.version}</dd>
         </div>
       </dl>
-      <div style="clear:left;"></div>
+      <div class="u-clear-left"></div>
 
       <h3>${this._('Options')}</h3>
 

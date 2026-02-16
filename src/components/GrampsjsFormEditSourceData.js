@@ -10,7 +10,7 @@ import {GrampsjsObjectForm} from './GrampsjsObjectForm.js'
 class GrampsjsFormEditSourceData extends GrampsjsObjectForm {
   renderForm() {
     return html`
-      <div style="width:100%;float:left;margin-bottom:20px;">
+      <div class="u-w-100" style="float:left;margin-bottom:20px;">
         <grampsjs-form-string
           @formdata:changed="${this._handleFormData}"
           fullwidth
@@ -20,7 +20,7 @@ class GrampsjsFormEditSourceData extends GrampsjsObjectForm {
         >
         </grampsjs-form-string>
       </div>
-      <div style="width:100%;float:left;margin-bottom:20px;">
+      <div class="u-w-100" style="float:left;margin-bottom:20px;">
         <grampsjs-form-string
           @formdata:changed="${this._handleFormData}"
           fullwidth
@@ -30,7 +30,7 @@ class GrampsjsFormEditSourceData extends GrampsjsObjectForm {
         >
         </grampsjs-form-string>
       </div>
-      <div style="width:100%;float:left;margin-bottom:20px;">
+      <div class="u-w-100" style="float:left;margin-bottom:20px;">
         <grampsjs-form-string
           @formdata:changed="${this._handleFormData}"
           fullwidth

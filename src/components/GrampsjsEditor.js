@@ -319,11 +319,7 @@ class GrampsjsEditor extends GrampsjsAppStateMixin(LitElement) {
   _handleLink(pos) {
     this._dialogContent = html`
       <p>
-        <mwc-textfield
-          id="linkurl"
-          label="URL"
-          style="width:100%"
-        ></mwc-textfield>
+        <mwc-textfield id="linkurl" label="URL" class="u-w-100"></mwc-textfield>
       </p>
       <p>
         <grampsjs-form-select-object
