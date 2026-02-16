@@ -1,5 +1,5 @@
-function hasErrorField(data) {
-  return Boolean(data && typeof data === 'object' && 'error' in data)
+function hasErrorField(value) {
+  return Boolean(value && typeof value === 'object' && 'error' in value)
 }
 
 export function resolveApiErrorMessage(errorOrResponse, fallback) {
@@ -37,41 +37,45 @@ export function buildChatPayload(query, activeConversationId) {
 }
 
 export async function fetchConversations(apiGet) {
-  const data = await apiGet('/api/conversations/?page=1&pagesize=50')
-  if (data?.data && Array.isArray(data.data)) {
-    return data.data
+  const apiResponse = await apiGet('/api/conversations/?page=1&pagesize=50')
+  if (apiResponse?.data && Array.isArray(apiResponse.data)) {
+    return apiResponse.data
   }
-  if (Array.isArray(data)) {
-    return data
+  if (Array.isArray(apiResponse)) {
+    return apiResponse
   }
-  throw new Error(resolveApiErrorMessage(data, 'Failed to load conversations'))
+  throw new Error(
+    resolveApiErrorMessage(apiResponse, 'Failed to load conversations')
+  )
 }
 
 export async function fetchConversationMessages(apiGet, id) {
-  const data = await apiGet(`/api/conversations/${id}/`)
-  if (hasErrorField(data)) {
-    throw new Error(resolveApiErrorMessage(data, 'Failed to load conversation'))
+  const apiResponse = await apiGet(`/api/conversations/${id}/`)
+  if (hasErrorField(apiResponse)) {
+    throw new Error(
+      resolveApiErrorMessage(apiResponse, 'Failed to load conversation')
+    )
   }
-  const rawMessages = data?.data?.messages || data?.messages || []
+  const rawMessages = apiResponse?.data?.messages || apiResponse?.messages || []
   return normalizeConversationMessages(rawMessages)
 }
 
 export async function deleteConversation(apiDelete, id) {
-  const data = await apiDelete(`/api/conversations/${id}/`)
-  if (data?.error) {
-    throw new Error(resolveApiErrorMessage(data, 'An error occurred'))
+  const apiResponse = await apiDelete(`/api/conversations/${id}/`)
+  if (apiResponse?.error) {
+    throw new Error(resolveApiErrorMessage(apiResponse, 'An error occurred'))
   }
-  return data
+  return apiResponse
 }
 
 export async function sendChatPrompt(apiPost, query, activeConversationId) {
   const payload = buildChatPayload(query, activeConversationId)
-  const data = await apiPost('/api/chat/', payload, {dbChanged: false})
-  if (hasErrorField(data) || !data?.data?.response) {
-    throw new Error(resolveApiErrorMessage(data, 'An error occurred'))
+  const apiResponse = await apiPost('/api/chat/', payload, {dbChanged: false})
+  if (hasErrorField(apiResponse) || !apiResponse?.data?.response) {
+    throw new Error(resolveApiErrorMessage(apiResponse, 'An error occurred'))
   }
   return {
-    response: data.data.response,
-    conversationId: data.data.conversation_id || null,
+    response: apiResponse.data.response,
+    conversationId: apiResponse.data.conversation_id || null,
   }
 }

@@ -79,7 +79,7 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
       loading: {type: Boolean},
       conversationsLoading: {type: Boolean},
       conversationsError: {type: String},
-      _chatError: {type: String},
+      _chatErrorMessage: {type: String},
       _sidebarOpen: {type: Boolean},
     }
   }
@@ -92,7 +92,7 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     this.loading = false
     this.conversationsLoading = false
     this.conversationsError = ''
-    this._chatError = ''
+    this._chatErrorMessage = ''
     this._sidebarOpen = false
   }
 
@@ -155,9 +155,9 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
       this.conversations = await fetchConversations(
         this.appState.apiGet.bind(this.appState)
       )
-    } catch (error) {
+    } catch (err) {
       const errorMessage = resolveApiErrorMessage(
-        error,
+        err,
         this._('Failed to load conversations')
       )
       this.conversations = []
@@ -175,23 +175,23 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     this.activeConversationId = id
     this.messages = []
     this.loading = true
-    this._chatError = ''
+    this._chatErrorMessage = ''
 
     try {
       this.messages = await fetchConversationMessages(
         this.appState.apiGet.bind(this.appState),
         id
       )
-    } catch (error) {
-      this._chatError = resolveApiErrorMessage(
-        error,
+    } catch (err) {
+      this._chatErrorMessage = resolveApiErrorMessage(
+        err,
         this._('Failed to load conversation')
       )
       this.messages = [
         ...this.messages,
-        {role: 'error', content: this._chatError},
+        {role: 'error', content: this._chatErrorMessage},
       ]
-      fireEvent(this, 'grampsjs:error', {message: this._chatError})
+      fireEvent(this, 'grampsjs:error', {message: this._chatErrorMessage})
     } finally {
       this.loading = false
     }
@@ -200,7 +200,7 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
   _handleNewConversation() {
     this.activeConversationId = null
     this.messages = []
-    this._chatError = ''
+    this._chatErrorMessage = ''
     this._sidebarOpen = false
     this._focusInput()
   }
@@ -215,37 +215,37 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
         this.activeConversationId = null
         this.messages = []
       }
-    } catch (error) {
-      this._chatError = resolveApiErrorMessage(
-        error,
+    } catch (err) {
+      this._chatErrorMessage = resolveApiErrorMessage(
+        err,
         this._('An error occurred')
       )
       this.messages = [
         ...this.messages,
-        {role: 'error', content: this._chatError},
+        {role: 'error', content: this._chatErrorMessage},
       ]
-      fireEvent(this, 'grampsjs:error', {message: this._chatError})
+      fireEvent(this, 'grampsjs:error', {message: this._chatErrorMessage})
     }
   }
 
   _handlePrompt(event) {
     const userContent = event.detail.message
-    this._chatError = ''
+    this._chatErrorMessage = ''
     this.messages = [...this.messages, {role: 'human', content: userContent}]
     this._generateResponse(userContent)
   }
 
   async _generateResponse(query) {
     this.loading = true
-    this._chatError = ''
+    this._chatErrorMessage = ''
 
     try {
-      const {response, conversationId} = await sendChatPrompt(
+      const {response: aiResponse, conversationId} = await sendChatPrompt(
         this.appState.apiPost.bind(this.appState),
         query,
         this.activeConversationId
       )
-      this.messages = [...this.messages, {role: 'ai', content: response}]
+      this.messages = [...this.messages, {role: 'ai', content: aiResponse}]
 
       // Update conversation ID from response (new conversation case)
       if (conversationId) {
@@ -254,16 +254,16 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
 
       // Refresh sidebar to show new/updated conversation
       this._fetchConversations()
-    } catch (error) {
-      this._chatError = resolveApiErrorMessage(
-        error,
+    } catch (err) {
+      this._chatErrorMessage = resolveApiErrorMessage(
+        err,
         this._('An error occurred')
       )
       this.messages = [
         ...this.messages,
-        {role: 'error', content: this._chatError},
+        {role: 'error', content: this._chatErrorMessage},
       ]
-      fireEvent(this, 'grampsjs:error', {message: this._chatError})
+      fireEvent(this, 'grampsjs:error', {message: this._chatErrorMessage})
     } finally {
       this.loading = false
     }

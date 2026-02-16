@@ -21,19 +21,19 @@ export async function shareDiscoveryFromMessage(apiPost, message) {
   if (!payload.content) {
     return {shared: false}
   }
-  const response = await apiPost(SHARED_DISCOVERY_CREATE_ENDPOINT, payload)
-  if (response?.error) {
-    throw new Error(response.error)
+  const apiResponse = await apiPost(SHARED_DISCOVERY_CREATE_ENDPOINT, payload)
+  if (apiResponse?.error) {
+    throw new Error(apiResponse.error)
   }
   return {shared: true}
 }
 
 export async function fetchSharedDiscoveries(apiGet) {
-  const response = await apiGet(SHARED_DISCOVERIES_FEED_ENDPOINT)
-  if (response?.error) {
-    return {discoveries: [], errorMessage: response.error}
+  const apiResponse = await apiGet(SHARED_DISCOVERIES_FEED_ENDPOINT)
+  if (apiResponse?.error) {
+    return {discoveries: [], errorMessage: apiResponse.error}
   }
-  const discoveries = unwrapApiData(response, [])
+  const discoveries = unwrapApiData(apiResponse, [])
   return {
     discoveries: Array.isArray(discoveries) ? discoveries : [],
     errorMessage: '',

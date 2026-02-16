@@ -105,7 +105,7 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
       discoveries: {type: Array},
       dismissedDiscoveryIds: {type: Array},
       loading: {type: Boolean},
-      error: {type: String},
+      errorMessage: {type: String},
     }
   }
 
@@ -114,7 +114,7 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
     this.discoveries = []
     this.dismissedDiscoveryIds = []
     this.loading = false
-    this.error = ''
+    this.errorMessage = ''
   }
 
   connectedCallback() {
@@ -133,14 +133,14 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
             </div>
           `
         : ''}
-      ${!this.loading && this.error ? this._renderError() : ''}
-      ${!this.loading && !this.error ? this._renderFeed() : ''}
+      ${!this.loading && this.errorMessage ? this._renderError() : ''}
+      ${!this.loading && !this.errorMessage ? this._renderFeed() : ''}
     `
   }
 
   _renderError() {
     return html`
-      <div class="error">${this.error}</div>
+      <div class="error">${this.errorMessage}</div>
       <md-text-button @click=${this._loadDiscoveries}>
         ${this._('Retry')}
       </md-text-button>
@@ -199,16 +199,16 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
 
   async _loadDiscoveries() {
     this.loading = true
-    this.error = ''
+    this.errorMessage = ''
 
     try {
       const {discoveries, errorMessage} = await fetchSharedDiscoveries(
         this.appState.apiGet.bind(this.appState)
       )
       this.discoveries = discoveries
-      this.error = errorMessage
+      this.errorMessage = errorMessage
     } catch (err) {
-      this.error = this._('Failed to load shared discoveries.')
+      this.errorMessage = this._('Failed to load shared discoveries.')
     } finally {
       this.loading = false
     }
