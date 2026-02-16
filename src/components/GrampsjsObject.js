@@ -36,6 +36,7 @@ import './GrampsjsTags.js'
 import './GrampsjsUrls.js'
 import './GrampsjsObjectToc.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
+import {getMapZoomFromBounds} from '../mapUtils.js'
 
 import {fireEvent} from '../util.js'
 import {getMediaUrl} from '../api.js'
@@ -934,14 +935,7 @@ export class GrampsjsObject extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _getZoomFromBounds(bounds) {
-    const xMin = bounds[0][0]
-    const yMin = bounds[0][1]
-    const xMax = bounds[1][0]
-    const yMax = bounds[1][1]
-    const Lx = xMax - xMin
-    const Ly = yMax - yMin
-    const L = Math.max(Lx, Ly)
-    return Math.round(Math.log2(360 / L))
+    return getMapZoomFromBounds(bounds, 1)
   }
 
   _setupIntersectionObserver() {

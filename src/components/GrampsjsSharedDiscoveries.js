@@ -8,7 +8,7 @@ import {sharedStyles} from '../SharedStyles.js'
 import {getTreeId} from '../api.js'
 import {renderIconSvg} from '../icons.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {renderMarkdownLinks} from '../util.js'
+import {renderMarkdownLinks, unwrapApiData} from '../util.js'
 
 const DISMISSED_DISCOVERIES_PREFIX = 'grampsjs_dismissed_shared_discoveries'
 
@@ -204,7 +204,7 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
         this.error = response.error
         return
       }
-      const discoveries = response?.data?.data || response?.data || []
+      const discoveries = unwrapApiData(response, [])
       this.discoveries = Array.isArray(discoveries) ? discoveries : []
     } catch (err) {
       this.error = this._('Failed to load shared discoveries.')

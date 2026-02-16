@@ -4,97 +4,21 @@ import '@material/web/icon/icon.js'
 
 import {mdiFamilyTree} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
+import {aiCardStyles, typingDotsStyles} from '../AiSharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderIconSvg} from '../icons.js'
-import {renderMarkdownLinks} from '../util.js'
+import {renderMarkdownLinks, unwrapApiData} from '../util.js'
 
 class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
       sharedStyles,
+      aiCardStyles,
+      typingDotsStyles,
       css`
         :host {
           display: block;
           margin: 16px 0;
-        }
-
-        .connections-card {
-          background-color: var(--grampsjs-color-shade-240);
-          border-radius: 12px;
-          border-left: 4px solid var(--md-sys-color-primary, #6750a4);
-          padding: 20px 24px;
-        }
-
-        .connections-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 12px;
-          color: var(--grampsjs-body-font-color);
-        }
-
-        .connections-header md-icon {
-          --md-icon-size: 20px;
-          color: var(--md-sys-color-primary, #6750a4);
-        }
-
-        .connections-header span {
-          font-size: 14px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .connections-content {
-          font-size: 16px;
-          line-height: 26px;
-          font-weight: 340;
-          color: var(--grampsjs-body-font-color);
-          white-space: pre-wrap;
-        }
-
-        .connections-content a {
-          color: var(--md-sys-color-primary, #6750a4);
-          text-decoration: none;
-        }
-
-        .connections-content a:hover {
-          text-decoration: underline;
-        }
-
-        .loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          gap: 4px;
-        }
-
-        .dot {
-          width: 8px;
-          height: 8px;
-          background-color: var(--grampsjs-body-font-color-50);
-          border-radius: 50%;
-          animation: flash 1.4s infinite ease-in-out both;
-        }
-
-        .dot:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-
-        .dot:nth-child(2) {
-          animation-delay: -0.16s;
-        }
-
-        @keyframes flash {
-          0%,
-          80%,
-          100% {
-            opacity: 0;
-          }
-          40% {
-            opacity: 1;
-          }
         }
 
         .error {
@@ -152,15 +76,15 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
 
     if (this._loading) {
       return html`
-        <div class="connections-card">
-          <div class="connections-header">
+        <div class="ai-card">
+          <div class="ai-card-header">
             <md-icon>${renderIconSvg(mdiFamilyTree, 'currentColor')}</md-icon>
-            <span>${this._('AI Connections')}</span>
+            <span class="ai-card-title">${this._('AI Connections')}</span>
           </div>
-          <div class="loading">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+          <div class="typing-dots">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
           </div>
         </div>
       `
@@ -168,10 +92,10 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
 
     if (this._error && !this._connections) {
       return html`
-        <div class="connections-card">
-          <div class="connections-header">
+        <div class="ai-card">
+          <div class="ai-card-header">
             <md-icon>${renderIconSvg(mdiFamilyTree, 'currentColor')}</md-icon>
-            <span>${this._('AI Connections')}</span>
+            <span class="ai-card-title">${this._('AI Connections')}</span>
           </div>
           <div class="error">${this._error}</div>
           <div class="retry-area">
@@ -189,12 +113,12 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
     if (!this._connections) return html``
 
     return html`
-      <div class="connections-card">
-        <div class="connections-header">
+      <div class="ai-card">
+        <div class="ai-card-header">
           <md-icon>${renderIconSvg(mdiFamilyTree, 'currentColor')}</md-icon>
-          <span>${this._('AI Connections')}</span>
+          <span class="ai-card-title">${this._('AI Connections')}</span>
         </div>
-        <div class="connections-content">
+        <div class="ai-card-content">
           ${renderMarkdownLinks(this._connections.content || '')}
         </div>
       </div>
@@ -207,17 +131,18 @@ class GrampsjsPersonConnections extends GrampsjsAppStateMixin(LitElement) {
     this._error = ''
 
     try {
-      const data = await this.appState.apiGet(
+      const response = await this.appState.apiGet(
         `/api/people/${this.grampsId}/connections/`
       )
+      const connections = unwrapApiData(response, null)
       this._checked = true
       this._loading = false
 
-      if (data?.data?.data) {
-        this._connections = data.data.data
-      } else if (data?.error) {
+      if (connections && typeof connections === 'object') {
+        this._connections = connections
+      } else if (response?.error) {
         this._connections = null
-        const msg = data.error || ''
+        const msg = response.error || ''
         this._error =
           msg.toLowerCase() === 'not found'
             ? this._(

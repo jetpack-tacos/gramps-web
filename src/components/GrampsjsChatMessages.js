@@ -1,5 +1,6 @@
 import {html, css, LitElement} from 'lit'
 import {sharedStyles} from '../SharedStyles.js'
+import {typingDotsStyles} from '../AiSharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks, fireEvent} from '../util.js'
 import './GrampsjsChatMessage.js'
@@ -21,6 +22,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
     return [
       sharedStyles,
+      typingDotsStyles,
       css`
         :host {
           display: flex;
@@ -41,40 +43,14 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
         }
 
         .loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
           height: 24px;
           width: 48px;
+          padding: 0;
           font-size: 24px;
         }
 
-        .dot {
-          width: 8px;
-          height: 8px;
+        .loading .typing-dot {
           margin: 0 4px;
-          background-color: var(--grampsjs-body-font-color-50);
-          border-radius: 50%;
-          animation: flash 1.4s infinite ease-in-out both;
-        }
-
-        .dot:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-
-        .dot:nth-child(2) {
-          animation-delay: -0.16s;
-        }
-
-        @keyframes flash {
-          0%,
-          80%,
-          100% {
-            opacity: 0;
-          }
-          40% {
-            opacity: 1;
-          }
         }
 
         @keyframes fadeIn {
@@ -188,10 +164,10 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           ${this.loading
             ? html`
                 <grampsjs-chat-message type="ai" .appState="${this.appState}">
-                  <div class="loading" slot="no-wrap">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
+                  <div class="loading typing-dots" slot="no-wrap">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
                   </div>
                 </grampsjs-chat-message>
               `

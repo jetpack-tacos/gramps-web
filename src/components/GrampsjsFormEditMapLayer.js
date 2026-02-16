@@ -15,6 +15,7 @@ import './GrampsjsFormSelectObjectList.js'
 
 import {GrampsjsObjectForm} from './GrampsjsObjectForm.js'
 import {getMediaUrl} from '../api.js'
+import {getMapZoomFromBounds} from '../mapUtils.js'
 
 class GrampsjsFormEditMapLayer extends GrampsjsObjectForm {
   static get styles() {
@@ -74,18 +75,7 @@ class GrampsjsFormEditMapLayer extends GrampsjsObjectForm {
   }
 
   _getZoom() {
-    const bounds = this._getBounds()
-    if (bounds.length !== 2) {
-      return 1
-    }
-    const yMin = bounds[0][0]
-    const xMin = bounds[0][1]
-    const yMax = bounds[1][0]
-    const xMax = bounds[1][1]
-    const Lx = xMax - xMin
-    const Ly = yMax - yMin
-    const L = Math.max(Lx, Ly)
-    return Math.round(Math.log2(360 / L))
+    return getMapZoomFromBounds(this._getBounds(), 1)
   }
 
   _getLogWidth() {

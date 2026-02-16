@@ -6,7 +6,7 @@ import {mdiAutoFix} from '@mdi/js'
 
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {fireEvent} from '../util.js'
+import {fireEvent, unwrapApiData} from '../util.js'
 import {renderIconSvg} from '../icons.js'
 
 export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
@@ -235,8 +235,7 @@ export class GrampsjsInterestingNuggets extends GrampsjsAppStateMixin(
         this.error = response.error
         return
       }
-      // The response is double-nested: {data: {data: [...]}}
-      const nuggets = response?.data?.data || []
+      const nuggets = unwrapApiData(response, [])
       this.nuggets = Array.isArray(nuggets) ? nuggets : []
     } catch (err) {
       // eslint-disable-next-line no-console
