@@ -1,4 +1,4 @@
-import { html, css, LitElement } from 'lit'
+import {html, css, LitElement} from 'lit'
 
 import '@material/mwc-icon'
 import '@material/mwc-button'
@@ -6,13 +6,13 @@ import '@material/mwc-textfield'
 import '@material/mwc-circular-progress'
 
 import './GrampsjsPasswordManagerPolyfill.js'
-import { mdiCheckCircle } from '@mdi/js'
-import { sharedStyles } from '../SharedStyles.js'
-import { __APIHOST__, apiGetTokens, getTreeFromToken } from '../api.js'
-import { fireEvent } from '../util.js'
-import { GrampsjsAppStateMixin } from '../mixins/GrampsjsAppStateMixin.js'
+import {mdiCheckCircle} from '@mdi/js'
+import {sharedStyles} from '../SharedStyles.js'
+import {__APIHOST__, apiGetTokens, getTreeFromToken} from '../api.js'
+import {fireEvent} from '../util.js'
+import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import './GrampsjsFormUpload.js'
-import { renderIcon } from '../icons.js'
+import {renderIcon} from '../icons.js'
 import './GrampsjsProgressIndicator.js'
 
 const STATE_ERROR = -1
@@ -79,14 +79,14 @@ class GrampsjsFirstRun extends GrampsjsAppStateMixin(LitElement) {
 
   static get properties() {
     return {
-      token: { type: String },
-      stateUser: { type: Number },
-      stateConfig: { type: Number },
-      _errorUser: { type: String },
-      _errorConfig: { type: String },
-      _errorTree: { type: String },
-      _uploadHint: { type: String },
-      _tree: { type: String },
+      token: {type: String},
+      stateUser: {type: Number},
+      stateConfig: {type: Number},
+      _errorUser: {type: String},
+      _errorConfig: {type: String},
+      _errorTree: {type: String},
+      _uploadHint: {type: String},
+      _tree: {type: String},
     }
   }
 
@@ -111,15 +111,15 @@ class GrampsjsFirstRun extends GrampsjsAppStateMixin(LitElement) {
           <h3>
             ${this._('Create an admin account')}
             ${this.stateUser !== STATE_INITIAL
-        ? html`
+              ? html`
                   <span class="icon">
                     ${renderIcon(
-          mdiCheckCircle,
-          'var(--grampsjs-alert-success-font-color)'
-        )}
+                      mdiCheckCircle,
+                      'var(--grampsjs-alert-success-font-color)'
+                    )}
                   </span>
                 `
-        : ''}
+              : ''}
           </h3>
 
           <p>${this._('Enter the details for the admin user.')}</p>
@@ -160,26 +160,26 @@ class GrampsjsFirstRun extends GrampsjsAppStateMixin(LitElement) {
           ></mwc-textfield>
 
           ${this._tree
-        ? ''
-        : html`
+            ? ''
+            : html`
                 <h3>
                   ${this._('E-mail settings')}
                   ${this.stateConfig !== STATE_INITIAL
-            ? html`
+                    ? html`
                         <span class="icon">
                           ${renderIcon(
-              mdiCheckCircle,
-              'var(--grampsjs-alert-success-font-color)'
-            )}
+                            mdiCheckCircle,
+                            'var(--grampsjs-alert-success-font-color)'
+                          )}
                         </span>
                       `
-            : ''}
+                    : ''}
                 </h3>
 
                 <p>
                   ${this._(
-              'Optionally, enter existing IMAP credentials to enable e-mail notifications required e.g. for user registration.'
-            )}
+                    'Optionally, enter existing IMAP credentials to enable e-mail notifications required e.g. for user registration.'
+                  )}
                 </p>
 
                 <mwc-textfield
@@ -236,30 +236,30 @@ class GrampsjsFirstRun extends GrampsjsAppStateMixin(LitElement) {
             type="submit"
             @click="${this._submit}"
             ?disabled=${this.stateUser !== STATE_READY &&
-      this.stateUser !== STATE_ERROR}
+            this.stateUser !== STATE_ERROR}
           >
           </mwc-button>
 
           <p>
             ${this._showProgress(
-        this._('Creating owner account'),
-        this.stateUser,
-        this._errorUser
-      )}
+              this._('Creating owner account'),
+              this.stateUser,
+              this._errorUser
+            )}
             ${this._tree
-        ? ''
-        : this._showProgress(
-          this._('Storing configuration'),
-          this.stateConfig,
-          this._errorConfig
-        )}
+              ? ''
+              : this._showProgress(
+                  this._('Storing configuration'),
+                  this.stateConfig,
+                  this._errorConfig
+                )}
           </p>
 
           <div
             style="visibility:${this.stateUser === STATE_DONE &&
-        this.stateConfig !== STATE_PROGRESS
-        ? 'visible'
-        : 'hidden'};"
+            this.stateConfig !== STATE_PROGRESS
+              ? 'visible'
+              : 'hidden'};"
           >
             <mwc-button
               raised
@@ -339,7 +339,7 @@ class GrampsjsFirstRun extends GrampsjsAppStateMixin(LitElement) {
         this.stateUser = STATE_DONE
         const btn = this.shadowRoot.querySelector('#start-btn')
         if (btn) {
-          btn.scrollIntoView({ block: 'start', behavior: 'smooth' })
+          btn.scrollIntoView({block: 'start', behavior: 'smooth'})
         }
         return
       }

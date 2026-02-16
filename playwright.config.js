@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, devices } from '@playwright/test';
+import {defineConfig, devices} from '@playwright/test'
 
 /**
  * Playwright configuration for GenAI Genealogy testing
@@ -20,10 +20,7 @@ export default defineConfig({
   workers: 1,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html', { outputFolder: 'test-results/html-report' }],
-    ['list']
-  ],
+  reporter: [['html', {outputFolder: 'test-results/html-report'}], ['list']],
 
   /* Shared settings for all the projects below. */
   use: {
@@ -44,10 +41,10 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {...devices['Desktop Chrome']},
     },
   ],
 
   /* Create test-results directory if it doesn't exist */
   outputDir: 'test-results',
-});
+})

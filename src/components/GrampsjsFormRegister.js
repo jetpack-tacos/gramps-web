@@ -1,12 +1,12 @@
 /* eslint-disable lit-a11y/click-events-have-key-events */
-import { html, css, LitElement } from 'lit'
+import {html, css, LitElement} from 'lit'
 import '@material/web/textfield/outlined-text-field'
 
-import { sharedStyles } from '../SharedStyles.js'
-import { apiRegisterUser } from '../api.js'
-import { fireEvent } from '../util.js'
+import {sharedStyles} from '../SharedStyles.js'
+import {apiRegisterUser} from '../api.js'
+import {fireEvent} from '../util.js'
 
-import { GrampsjsAppStateMixin } from '../mixins/GrampsjsAppStateMixin.js'
+import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 
 class GrampsjsFormRegister extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -53,11 +53,11 @@ class GrampsjsFormRegister extends GrampsjsAppStateMixin(LitElement) {
 
   static get properties() {
     return {
-      isFormValid: { type: Boolean },
-      email: { type: String },
-      emailError: { type: String },
-      register: { type: Boolean },
-      tree: { type: String },
+      isFormValid: {type: Boolean},
+      email: {type: String},
+      emailError: {type: String},
+      register: {type: Boolean},
+      tree: {type: String},
     }
   }
 
@@ -144,8 +144,8 @@ class GrampsjsFormRegister extends GrampsjsAppStateMixin(LitElement) {
             ${this._('New account registered successfully.')}
             <br />
             ${this._(
-      'Please confirm your e-mail address by clicking the link in the e-mail you received and then wait for the tree owner to activate your account.'
-    )}
+              'Please confirm your e-mail address by clicking the link in the e-mail you received and then wait for the tree owner to activate your account.'
+            )}
           </p>
           <p class="reset-link">
             ${this._('Already have an account?')}
@@ -164,7 +164,7 @@ class GrampsjsFormRegister extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _handleNav(path) {
-    fireEvent(this, 'nav', { path })
+    fireEvent(this, 'nav', {path})
   }
 
   _handlePasswordInput() {
@@ -240,7 +240,7 @@ class GrampsjsFormRegister extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _showError(message) {
-    fireEvent(this, 'grampsjs:error', { message })
+    fireEvent(this, 'grampsjs:error', {message})
   }
 }
 
