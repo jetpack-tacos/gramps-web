@@ -2,6 +2,7 @@ import {html} from 'lit'
 
 import '../components/GrampsjsTask.js'
 import {GrampsjsViewSource} from './GrampsjsViewSource.js'
+import {fireEvent} from '../util.js'
 
 export class GrampsjsViewTask extends GrampsjsViewSource {
   constructor() {
@@ -22,22 +23,86 @@ export class GrampsjsViewTask extends GrampsjsViewSource {
     `
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  async _handleUpdateNoteText(event) {
-    const data = event.detail
-    await this.appState.apiPut(`/api/notes/${data.handle}`, data)
-    this._updateData(false)
+  _resolveErrorMessage(errorOrResponse, fallback) {
+    if (typeof errorOrResponse?.error === 'string' && errorOrResponse.error) {
+      return errorOrResponse.error
+    }
+    if (
+      typeof errorOrResponse?.message === 'string' &&
+      errorOrResponse.message
+    ) {
+      return errorOrResponse.message
+    }
+    return this._(fallback)
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  async _handleUpdateNoteText(event) {
+    const data = event.detail
+    this.loading = true
+    this.error = false
+    this._errorMessage = ''
+    let shouldRefresh = false
+
+    try {
+      const result = await this.appState.apiPut(
+        `/api/notes/${data.handle}`,
+        data
+      )
+      if (result && 'error' in result) {
+        throw new Error(result.error || 'Failed to update task note')
+      }
+      shouldRefresh = true
+    } catch (error) {
+      const message = this._resolveErrorMessage(
+        error,
+        'Failed to update task note'
+      )
+      this.error = true
+      this._errorMessage = message
+      fireEvent(this, 'grampsjs:error', {message})
+    } finally {
+      if (shouldRefresh) {
+        this._updateData(false)
+      } else {
+        this.loading = false
+      }
+    }
+  }
+
   async _handleAddNoteText(event) {
     const data = event.detail
-    const res = await this.appState.apiPost('/api/notes/', data)
-    if ('data' in res) {
-      const [obj] = res.data
-      this.addHandle(obj.handle, this._data, this._className, 'note_list')
+    this.loading = true
+    this.error = false
+    this._errorMessage = ''
+    let shouldRefresh = false
+
+    try {
+      const result = await this.appState.apiPost('/api/notes/', data)
+      if (result && 'error' in result) {
+        throw new Error(result.error || 'Failed to add task note')
+      }
+      if (result && 'data' in result) {
+        const [obj] = result.data || []
+        if (obj?.handle) {
+          this.addHandle(obj.handle, this._data, this._className, 'note_list')
+        }
+      }
+      shouldRefresh = true
+    } catch (error) {
+      const message = this._resolveErrorMessage(
+        error,
+        'Failed to add task note'
+      )
+      this.error = true
+      this._errorMessage = message
+      fireEvent(this, 'grampsjs:error', {message})
+    } finally {
+      if (shouldRefresh) {
+        this._updateData(false)
+      } else {
+        this.loading = false
+      }
     }
-    this._updateData(false)
   }
 
   // no FAB

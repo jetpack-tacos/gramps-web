@@ -43,7 +43,7 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
           flex-shrink: 0;
         }
 
-        md-filled-tonal-button {
+        .header md-filled-tonal-button {
           width: 100%;
           --md-filled-tonal-button-container-height: 40px;
         }
@@ -111,6 +111,23 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
           font-size: 14px;
         }
 
+        .status {
+          padding: 20px 16px;
+          text-align: center;
+          color: var(--grampsjs-body-font-color-50);
+          font-size: 14px;
+        }
+
+        .status.error {
+          color: var(--md-sys-color-error);
+        }
+
+        .retry-btn {
+          margin-top: 10px;
+          width: 100%;
+          --md-filled-tonal-button-container-height: 36px;
+        }
+
         @media (max-width: 768px) {
           :host {
             position: absolute;
@@ -135,6 +152,8 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
     return {
       conversations: {type: Array},
       activeConversationId: {type: String},
+      loading: {type: Boolean},
+      errorMessage: {type: String},
       open: {type: Boolean, reflect: true},
     }
   }
@@ -143,11 +162,43 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
     super()
     this.conversations = []
     this.activeConversationId = null
+    this.loading = false
+    this.errorMessage = ''
     this.open = false
   }
 
   render() {
     const grouped = this._groupConversations()
+    let conversationsContent = ''
+    if (this.loading) {
+      conversationsContent = html`
+        <div class="status">${this._('Loading conversations...')}</div>
+      `
+    } else if (this.errorMessage) {
+      conversationsContent = html`
+        <div class="status error">
+          <div>${this.errorMessage}</div>
+          <md-filled-tonal-button
+            class="retry-btn"
+            @click="${this._handleRetry}"
+          >
+            ${this._('Retry')}
+          </md-filled-tonal-button>
+        </div>
+      `
+    } else if (this.conversations.length === 0) {
+      conversationsContent = html`
+        <div class="empty-state">${this._('No conversations yet')}</div>
+      `
+    } else {
+      conversationsContent = grouped.map(
+        group => html`
+          <div class="group-label">${group.label}</div>
+          ${group.items.map(conv => this._renderConversation(conv))}
+        `
+      )
+    }
+
     return html`
       <div class="header">
         <md-filled-tonal-button @click="${this._handleNewChat}">
@@ -157,18 +208,7 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
           ${this._('New Chat')}
         </md-filled-tonal-button>
       </div>
-      <div class="conversations">
-        ${this.conversations.length === 0
-          ? html`<div class="empty-state">
-              ${this._('No conversations yet')}
-            </div>`
-          : grouped.map(
-              group => html`
-                <div class="group-label">${group.label}</div>
-                ${group.items.map(conv => this._renderConversation(conv))}
-              `
-            )}
-      </div>
+      <div class="conversations">${conversationsContent}</div>
     `
   }
 
@@ -231,13 +271,23 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
   }
 
   _handleSelect(id) {
+    if (this.loading) {
+      return
+    }
     fireEvent(this, 'chat:select-conversation', {id})
     this.open = false
   }
 
   _handleDelete(e, id) {
+    if (this.loading) {
+      return
+    }
     e.stopPropagation()
     fireEvent(this, 'chat:delete-conversation', {id})
+  }
+
+  _handleRetry() {
+    fireEvent(this, 'chat:retry-conversations')
   }
 }
 

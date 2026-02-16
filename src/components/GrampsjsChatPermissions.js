@@ -30,32 +30,67 @@ export class GrampsjsChatPermissions extends GrampsjsConnectedComponent {
         .hidden {
           visibility: hidden;
         }
+
+        .save-status {
+          margin: 8px 0 0;
+          color: var(--grampsjs-body-font-color-50);
+          font-size: 0.875rem;
+        }
+
+        .save-status.error {
+          color: var(--md-sys-color-error);
+        }
       `,
     ]
+  }
+
+  static get properties() {
+    return {
+      ...super.properties,
+      _saving: {state: true},
+      _saveErrorMessage: {state: true},
+    }
+  }
+
+  constructor() {
+    super()
+    this._saving = false
+    this._saveErrorMessage = ''
   }
 
   renderContent() {
     let minRoleAi = this._data?.data?.min_role_ai ?? 99
     minRoleAi = minRoleAi > 5 ? 99 : minRoleAi
-    return html`<p>
-      ${this._('User groups allowed to use AI chat:')}
-      <md-filled-select
-        id="select-role-ai"
-        class="margin-left"
-        @change="${this._handleChange}"
-      >
-        ${Object.keys(roleAiOptions).map(
-          key => html`
-            <md-select-option
-              value="${key}"
-              ?selected="${`${key}` === `${minRoleAi}`}"
-            >
-              <div slot="headline">${this._(roleAiOptions[key])}</div>
-            </md-select-option>
-          `
-        )}
-      </md-filled-select>
-    </p> `
+    return html`
+      <p>
+        ${this._('User groups allowed to use AI chat:')}
+        <md-filled-select
+          id="select-role-ai"
+          class="margin-left"
+          @change="${this._handleChange}"
+          ?disabled="${this._saving}"
+        >
+          ${Object.keys(roleAiOptions).map(
+            key => html`
+              <md-select-option
+                value="${key}"
+                ?selected="${`${key}` === `${minRoleAi}`}"
+              >
+                <div slot="headline">${this._(roleAiOptions[key])}</div>
+              </md-select-option>
+            `
+          )}
+        </md-filled-select>
+      </p>
+      ${this._saving
+        ? html`<p class="save-status">
+            ${this._('Saving chat permissions...')}
+          </p>`
+        : ''}
+      ${this._saveErrorMessage
+        ? html`<p class="save-status error">${this._saveErrorMessage}</p>`
+        : ''}
+    `
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -72,12 +107,31 @@ export class GrampsjsChatPermissions extends GrampsjsConnectedComponent {
 
   async _handleChange(event) {
     const minRoleAi = parseInt(event.target.value, 10)
+    if (Number.isNaN(minRoleAi)) {
+      return
+    }
+
     const payload = {min_role_ai: minRoleAi}
-    const data = await this.appState.apiPut('/api/trees/-', payload)
-    if ('error' in data) {
-      fireEvent(this, 'grampsjs:error', {message: data.error})
-    } else {
+    this._saving = true
+    this._saveErrorMessage = ''
+
+    try {
+      const data = await this.appState.apiPut('/api/trees/-', payload)
+      if (data && 'error' in data) {
+        this._saveErrorMessage =
+          data.error || this._('Failed to save chat permissions')
+        fireEvent(this, 'grampsjs:error', {message: this._saveErrorMessage})
+        this._updateData(false)
+        return
+      }
       fireEvent(this, 'token:refresh', {})
+    } catch (error) {
+      this._saveErrorMessage =
+        error?.message || this._('Failed to save chat permissions')
+      fireEvent(this, 'grampsjs:error', {message: this._saveErrorMessage})
+      this._updateData(false)
+    } finally {
+      this._saving = false
     }
   }
 

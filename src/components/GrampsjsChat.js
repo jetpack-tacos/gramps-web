@@ -6,6 +6,7 @@ import {mdiMenu} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderIconSvg} from '../icons.js'
+import {fireEvent} from '../util.js'
 import './GrampsjsChatSidebar.js'
 import './GrampsjsChatMessages.js'
 import './GrampsjsChatPrompt.js'
@@ -69,6 +70,9 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
       activeConversationId: {type: String},
       messages: {type: Array},
       loading: {type: Boolean},
+      conversationsLoading: {type: Boolean},
+      conversationsError: {type: String},
+      _chatError: {type: String},
       _sidebarOpen: {type: Boolean},
     }
   }
@@ -79,6 +83,9 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     this.activeConversationId = null
     this.messages = []
     this.loading = false
+    this.conversationsLoading = false
+    this.conversationsError = ''
+    this._chatError = ''
     this._sidebarOpen = false
   }
 
@@ -88,10 +95,13 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
         .appState="${this.appState}"
         .conversations="${this.conversations}"
         .activeConversationId="${this.activeConversationId}"
+        ?loading="${this.conversationsLoading}"
+        .errorMessage="${this.conversationsError}"
         ?open="${this._sidebarOpen}"
         @chat:new-conversation="${this._handleNewConversation}"
         @chat:select-conversation="${this._handleSelectConversation}"
         @chat:delete-conversation="${this._handleDeleteConversation}"
+        @chat:retry-conversations="${this._fetchConversations}"
       ></grampsjs-chat-sidebar>
       <div class="main-area">
         <div class="header">
@@ -132,14 +142,51 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
   }
 
   async _fetchConversations() {
-    const data = await this.appState.apiGet(
-      '/api/conversations/?page=1&pagesize=50'
-    )
-    if (data?.data && Array.isArray(data.data)) {
-      this.conversations = data.data
-    } else if (Array.isArray(data)) {
-      this.conversations = data
+    this.conversationsLoading = true
+    this.conversationsError = ''
+    try {
+      const data = await this.appState.apiGet(
+        '/api/conversations/?page=1&pagesize=50'
+      )
+      if (data?.data && Array.isArray(data.data)) {
+        this.conversations = data.data
+        return
+      }
+      if (Array.isArray(data)) {
+        this.conversations = data
+        return
+      }
+      const errorMessage = this._resolveErrorMessage(
+        data,
+        'Failed to load conversations'
+      )
+      this.conversations = []
+      this.conversationsError = errorMessage
+      fireEvent(this, 'grampsjs:error', {message: errorMessage})
+    } catch (error) {
+      const errorMessage = this._resolveErrorMessage(
+        error,
+        'Failed to load conversations'
+      )
+      this.conversations = []
+      this.conversationsError = errorMessage
+      fireEvent(this, 'grampsjs:error', {message: errorMessage})
+    } finally {
+      this.conversationsLoading = false
     }
+  }
+
+  _resolveErrorMessage(errorOrResponse, fallback) {
+    if (typeof errorOrResponse?.error === 'string' && errorOrResponse.error) {
+      return errorOrResponse.error
+    }
+    if (
+      typeof errorOrResponse?.message === 'string' &&
+      errorOrResponse.message
+    ) {
+      return errorOrResponse.message
+    }
+    return this._(fallback)
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -151,90 +198,114 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
 
   async _handleSelectConversation(e) {
     const {id} = e.detail
-    if (id === this.activeConversationId) return
+    if (!id || id === this.activeConversationId) return
 
     this.activeConversationId = id
     this.messages = []
     this.loading = true
+    this._chatError = ''
 
-    const data = await this.appState.apiGet(`/api/conversations/${id}/`)
-    this.loading = false
-
-    const rawMessages = data?.data?.messages || data?.messages
-    if (rawMessages) {
+    try {
+      const data = await this.appState.apiGet(`/api/conversations/${id}/`)
+      if (data && 'error' in data) {
+        throw new Error(data.error || 'Failed to load conversation')
+      }
+      const rawMessages = data?.data?.messages || data?.messages || []
       this.messages = rawMessages.map(msg => ({
         role: this._normalizeRole(msg.role),
         content: msg.content,
       }))
+    } catch (error) {
+      this._chatError = this._resolveErrorMessage(
+        error,
+        'Failed to load conversation'
+      )
+      this.messages = [
+        ...this.messages,
+        {role: 'error', content: this._chatError},
+      ]
+      fireEvent(this, 'grampsjs:error', {message: this._chatError})
+    } finally {
+      this.loading = false
     }
   }
 
   _handleNewConversation() {
     this.activeConversationId = null
     this.messages = []
+    this._chatError = ''
     this._sidebarOpen = false
     this._focusInput()
   }
 
   async _handleDeleteConversation(e) {
     const {id} = e.detail
-    const data = await this.appState.apiDelete(`/api/conversations/${id}/`)
-    if (data?.error) {
+    try {
+      const data = await this.appState.apiDelete(`/api/conversations/${id}/`)
+      if (data?.error) {
+        throw new Error(data.error || 'An error occurred')
+      }
+      this.conversations = this.conversations.filter(c => c.id !== id)
+
+      if (this.activeConversationId === id) {
+        this.activeConversationId = null
+        this.messages = []
+      }
+    } catch (error) {
+      this._chatError = this._resolveErrorMessage(error, 'An error occurred')
       this.messages = [
         ...this.messages,
-        {role: 'error', content: this._(data.error || 'An error occurred')},
+        {role: 'error', content: this._chatError},
       ]
-      return
-    }
-
-    this.conversations = this.conversations.filter(c => c.id !== id)
-
-    if (this.activeConversationId === id) {
-      this.activeConversationId = null
-      this.messages = []
+      fireEvent(this, 'grampsjs:error', {message: this._chatError})
     }
   }
 
   _handlePrompt(event) {
     const userContent = event.detail.message
+    this._chatError = ''
     this.messages = [...this.messages, {role: 'human', content: userContent}]
     this._generateResponse(userContent)
   }
 
   async _generateResponse(query) {
     this.loading = true
+    this._chatError = ''
 
     const payload = {query}
     if (this.activeConversationId) {
       payload.conversation_id = this.activeConversationId
     }
 
-    const data = await this.appState.apiPost('/api/chat/', payload, {
-      dbChanged: false,
-    })
-
-    this.loading = false
-
-    if ('error' in data || !data?.data?.response) {
+    try {
+      const data = await this.appState.apiPost('/api/chat/', payload, {
+        dbChanged: false,
+      })
+      if ((data && 'error' in data) || !data?.data?.response) {
+        throw new Error(data?.error || 'An error occurred')
+      }
       this.messages = [
         ...this.messages,
-        {role: 'error', content: this._(data.error || 'An error occurred')},
+        {role: 'ai', content: data.data.response},
       ]
-      return
+
+      // Update conversation ID from response (new conversation case)
+      if (data.data.conversation_id) {
+        this.activeConversationId = data.data.conversation_id
+      }
+
+      // Refresh sidebar to show new/updated conversation
+      this._fetchConversations()
+    } catch (error) {
+      this._chatError = this._resolveErrorMessage(error, 'An error occurred')
+      this.messages = [
+        ...this.messages,
+        {role: 'error', content: this._chatError},
+      ]
+      fireEvent(this, 'grampsjs:error', {message: this._chatError})
+    } finally {
+      this.loading = false
     }
-
-    this.messages = [
-      ...this.messages,
-      {role: 'ai', content: data.data.response},
-    ]
-
-    // Update conversation ID from response (new conversation case)
-    if (data.data.conversation_id) {
-      this.activeConversationId = data.data.conversation_id
-    }
-
-    // Refresh sidebar to show new/updated conversation
-    this._fetchConversations()
   }
 
   focusInput(retry = true) {
