@@ -5,12 +5,14 @@ import '@material/web/progress/circular-progress'
 import {mdiDelete} from '@mdi/js'
 
 import {sharedStyles} from '../SharedStyles.js'
-import {getTreeId} from '../api.js'
 import {renderIconSvg} from '../icons.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks, unwrapApiData} from '../util.js'
-
-const DISMISSED_DISCOVERIES_PREFIX = 'grampsjs_dismissed_shared_discoveries'
+import {
+  appendDismissedDiscoveryId,
+  loadDismissedDiscoveries,
+  saveDismissedDiscoveries,
+} from '../sharedDiscoveriesStorage.js'
 
 export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   LitElement
@@ -214,38 +216,27 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   }
 
   _dismissDiscovery(id) {
-    const discoveryId = String(id || '')
-    if (!discoveryId || this.dismissedDiscoveryIds.includes(discoveryId)) {
+    const dismissedDiscoveryIds = appendDismissedDiscoveryId(
+      this.dismissedDiscoveryIds,
+      id
+    )
+    if (dismissedDiscoveryIds === this.dismissedDiscoveryIds) {
       return
     }
-    this.dismissedDiscoveryIds = [...this.dismissedDiscoveryIds, discoveryId]
+    this.dismissedDiscoveryIds = dismissedDiscoveryIds
     this._saveDismissedDiscoveries()
   }
 
-  _storageKey() {
-    const treeIdFromState = this.appState?.dbInfo?.database?.path
-    return `${DISMISSED_DISCOVERIES_PREFIX}:${
-      treeIdFromState || getTreeId() || 'unknown'
-    }`
+  _treePath() {
+    return this.appState?.dbInfo?.database?.path
   }
 
   _loadDismissedDiscoveries() {
-    try {
-      const raw = localStorage.getItem(this._storageKey())
-      const parsed = JSON.parse(raw || '[]')
-      this.dismissedDiscoveryIds = Array.isArray(parsed)
-        ? parsed.map(id => String(id))
-        : []
-    } catch {
-      this.dismissedDiscoveryIds = []
-    }
+    this.dismissedDiscoveryIds = loadDismissedDiscoveries(this._treePath())
   }
 
   _saveDismissedDiscoveries() {
-    localStorage.setItem(
-      this._storageKey(),
-      JSON.stringify(this.dismissedDiscoveryIds)
-    )
+    saveDismissedDiscoveries(this._treePath(), this.dismissedDiscoveryIds)
   }
 }
 

@@ -12,6 +12,7 @@ import './GrampsjsPersonRelationship.js'
 import './GrampsjsFormExternalSearch.js'
 import './GrampsjsPersonInsights.js'
 import {fireEvent} from '../util.js'
+import {buildExternalSearchData} from '../personExternalSearchData.js'
 
 export class GrampsjsPerson extends GrampsjsObject {
   static get styles() {
@@ -348,25 +349,7 @@ export class GrampsjsPerson extends GrampsjsObject {
   }
 
   _handleExternalSearchClick() {
-    // Helper to extract year from date string (format: "YYYY-MM-DD" or "YYYY")
-    const extractYear = dateStr => {
-      if (!dateStr) return ''
-      const match = dateStr.match(/^\d{4}/)
-      return match ? match[0] : ''
-    }
-    const data = {
-      name_given: this.data?.profile?.name_given,
-      name_surname: this.data?.profile?.name_surname,
-      name_middle: this.data?.profile?.name_given?.split(' ')[1] || '',
-      place_name:
-        this.data?.profile?.birth?.place_name ||
-        this.data?.profile?.birth?.place ||
-        this.data?.profile?.death?.place_name ||
-        this.data?.profile?.death?.place ||
-        '',
-      birth_year: extractYear(this.data?.profile?.birth?.date),
-      death_year: extractYear(this.data?.profile?.death?.date),
-    }
+    const data = buildExternalSearchData(this.data)
     this.dialogContent = html`
       <div>
         <grampsjs-form-external-search

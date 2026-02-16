@@ -3,20 +3,8 @@ import {sharedStyles} from '../SharedStyles.js'
 import {typingDotsStyles} from '../AiSharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks, fireEvent} from '../util.js'
+import {extractPersonIdsFromMarkdown} from '../chatMessageUtils.js'
 import './GrampsjsChatMessage.js'
-
-function extractPersonIds(content) {
-  const personIds = []
-  const pattern = /\[[^\]]+\]\(\/person\/([^)/\s]+)\)/g
-  let match
-  // eslint-disable-next-line no-cond-assign
-  while ((match = pattern.exec(content)) !== null) {
-    if (match[1]) {
-      personIds.push(match[1])
-    }
-  }
-  return [...new Set(personIds)]
-}
 
 class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -201,7 +189,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
     try {
       await this.appState.apiPost('/api/shared/', {
         content,
-        person_ids: extractPersonIds(content),
+        person_ids: extractPersonIdsFromMarkdown(content),
       })
       fireEvent(this, 'grampsjs:notification', {
         message: this._('Shared to discovery feed'),
