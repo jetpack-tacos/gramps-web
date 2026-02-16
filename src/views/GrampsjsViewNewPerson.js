@@ -24,9 +24,19 @@ export class GrampsjsViewNewPerson extends GrampsjsNewPersonMixin(
     const processedData = this._processedData()
     this.appState.apiPost(this.postUrl, processedData).then(data => {
       if ('data' in data) {
+        const createdObjects = Array.isArray(data.data) ? data.data : []
+        const createdPerson = createdObjects.find(
+          obj => obj?.new?._class === 'Person'
+        )
+        const grampsId = createdPerson?.new?.gramps_id || ''
+        if (!grampsId) {
+          this.error = true
+          this._errorMessage = this._(
+            'Unexpected server response while creating person.'
+          )
+          return
+        }
         this.error = false
-        const grampsId = data.data.filter(obj => obj.new._class === 'Person')[0]
-          .new.gramps_id
         this.dispatchEvent(
           new CustomEvent('nav', {
             bubbles: true,

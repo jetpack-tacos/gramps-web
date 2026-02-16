@@ -242,7 +242,9 @@ export class GrampsjsViewExport extends GrampsjsView {
       this._fetchData(this.appState.i18n.lang)
     }
     const permissions = getPermissions()
-    this._viewPrivate = permissions.includes('ViewPrivate')
+    this._viewPrivate = Array.isArray(permissions)
+      ? permissions.includes('ViewPrivate')
+      : false
   }
 
   updated(changed) {

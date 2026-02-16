@@ -51,13 +51,14 @@ export function getInitialAppState() {
 
 export function appStateUpdatePermissions(appState) {
   const rawPermissions = getPermissions()
+  const permissionsList = Array.isArray(rawPermissions) ? rawPermissions : []
   const permissions = {
-    canAdd: rawPermissions.includes('AddObject'),
-    canEdit: rawPermissions.includes('EditObject'),
-    canViewPrivate: rawPermissions.includes('ViewPrivate'),
-    canManageUsers: rawPermissions.includes('EditOtherUser'),
-    canUseChat: rawPermissions.includes('UseChat'),
-    canUpgradeTree: rawPermissions.includes('UpgradeSchema'),
+    canAdd: permissionsList.includes('AddObject'),
+    canEdit: permissionsList.includes('EditObject'),
+    canViewPrivate: permissionsList.includes('ViewPrivate'),
+    canManageUsers: permissionsList.includes('EditOtherUser'),
+    canUseChat: permissionsList.includes('UseChat'),
+    canUpgradeTree: permissionsList.includes('UpgradeSchema'),
   }
   return {...appState, permissions}
 }

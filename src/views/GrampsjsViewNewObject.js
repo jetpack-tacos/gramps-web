@@ -86,10 +86,19 @@ export class GrampsjsViewNewObject extends GrampsjsView {
   _submit() {
     this.appState.apiPost(this.postUrl, this.data).then(data => {
       if ('data' in data) {
+        const createdObjects = Array.isArray(data.data) ? data.data : []
+        const createdObject = createdObjects.find(
+          obj => obj?.new?._class === this.objClass
+        )
+        const grampsId = createdObject?.new?.gramps_id || ''
+        if (!grampsId) {
+          this.error = true
+          this._errorMessage = this._(
+            'Unexpected server response while creating object.'
+          )
+          return
+        }
         this.error = false
-        const grampsId = data.data.filter(
-          obj => obj.new._class === this.objClass
-        )[0].new.gramps_id
         this.dispatchEvent(
           new CustomEvent('nav', {
             bubbles: true,

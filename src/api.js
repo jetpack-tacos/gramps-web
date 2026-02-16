@@ -7,6 +7,48 @@ export const __APIHOST__ = ''
 
 // Access token expiration time (15 minutes in milliseconds)
 export const ACCESS_TOKEN_EXPIRY_MS = 15 * 60 * 1000
+export const REQUEST_TIMEOUT_MS = 15 * 1000
+
+function isAbortError(error) {
+  return error?.name === 'AbortError'
+}
+
+function isNetworkError(error) {
+  return error instanceof TypeError
+}
+
+function getFetchErrorMessage(error) {
+  if (isAbortError(error)) {
+    return 'Request timed out'
+  }
+  if (isNetworkError(error)) {
+    return 'Network error'
+  }
+  return error.message
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  try {
+    return await fetch(url, {...options, signal: controller.signal})
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function fetchGetWithRetry(url, options = {}, attempt = 0) {
+  try {
+    return await fetchWithTimeout(url, options)
+  } catch (error) {
+    if ((isAbortError(error) || isNetworkError(error)) && attempt < 2) {
+      const backoffMs = 300 * 2 ** attempt
+      await new Promise(resolve => setTimeout(resolve, backoffMs))
+      return fetchGetWithRetry(url, options, attempt + 1)
+    }
+    throw error
+  }
+}
 
 export function doLogout() {
   localStorage.removeItem('access_token')
@@ -46,13 +88,16 @@ export function getTreeFromToken(token) {
 export function getPermissions() {
   const accessToken = localStorage.getItem('access_token')
   if (!accessToken || accessToken === '1') {
-    return null
+    return []
   }
   try {
     const claims = jwt_decode(accessToken) || {}
-    return claims.permissions || {}
+    if (Array.isArray(claims.permissions)) {
+      return claims.permissions
+    }
+    return []
   } catch (e) {
-    return {}
+    return []
   }
 }
 
@@ -275,7 +320,7 @@ export async function apiRefreshAuthToken(attempts = 3) {
     return {error: 'No refresh token found!'}
   }
   try {
-    const resp = await fetch(`${__APIHOST__}/api/token/refresh/`, {
+    const resp = await fetchWithTimeout(`${__APIHOST__}/api/token/refresh/`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${refreshToken}`,
@@ -301,7 +346,7 @@ export async function apiRefreshAuthToken(attempts = 3) {
     storeAuthToken(data.access_token, expires)
     return {}
   } catch (error) {
-    return {error: error.message}
+    return {error: getFetchErrorMessage(error)}
   }
 }
 
@@ -314,7 +359,7 @@ export async function apiGet(endpoint) {
     }
   }
   try {
-    const resp = await fetch(`${__APIHOST__}${endpoint}`, {
+    const resp = await fetchGetWithRetry(`${__APIHOST__}${endpoint}`, {
       method: 'GET',
       headers,
     })
@@ -350,10 +395,7 @@ export async function apiGet(endpoint) {
       etag: resp.headers.get('ETag'),
     }
   } catch (error) {
-    if (error instanceof TypeError) {
-      return {error: 'Network error'}
-    }
-    return {error: error.message}
+    return {error: getFetchErrorMessage(error)}
   }
 }
 
@@ -374,7 +416,7 @@ async function apiPutPost(
     headers['Content-Type'] = 'application/json'
   }
   try {
-    const resp = await fetch(`${__APIHOST__}${endpoint}`, {
+    const resp = await fetchWithTimeout(`${__APIHOST__}${endpoint}`, {
       method,
       headers,
       body: isJson ? JSON.stringify(payload) : payload,
@@ -427,7 +469,7 @@ async function apiPutPost(
       etag: resp.headers.get('ETag'),
     }
   } catch (error) {
-    return {error: error.message}
+    return {error: getFetchErrorMessage(error)}
   }
 }
 
@@ -724,7 +766,7 @@ export class Auth {
     if (this.refreshToken === null) {
       throw new Error('No refresh token found')
     }
-    const resp = await fetch(`${__APIHOST__}/api/token/refresh/`, {
+    const resp = await fetchWithTimeout(`${__APIHOST__}/api/token/refresh/`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.refreshToken}`,
@@ -760,7 +802,7 @@ export async function apiGetNew(auth, endpoint) {
       headers.Authorization = `Bearer ${accessToken}`
       // eslint-disable-next-line no-empty
     } catch {}
-    const resp = await fetch(`${__APIHOST__}${endpoint}`, {
+    const resp = await fetchGetWithRetry(`${__APIHOST__}${endpoint}`, {
       method: 'GET',
       headers,
     })
@@ -784,10 +826,7 @@ export async function apiGetNew(auth, endpoint) {
       etag: resp.headers.get('ETag'),
     }
   } catch (error) {
-    if (error instanceof TypeError) {
-      return {error: 'Network error'}
-    }
-    return {error: error.message}
+    return {error: getFetchErrorMessage(error)}
   }
 }
 
@@ -812,7 +851,7 @@ export async function apiPutPostDeleteNew(
     if (isJson) {
       headers['Content-Type'] = 'application/json'
     }
-    const resp = await fetch(`${__APIHOST__}${endpoint}`, {
+    const resp = await fetchWithTimeout(`${__APIHOST__}${endpoint}`, {
       method,
       headers,
       body: isJson ? JSON.stringify(payload) : payload,
@@ -853,6 +892,6 @@ export async function apiPutPostDeleteNew(
       etag: resp.headers.get('ETag'),
     }
   } catch (error) {
-    return {error: error.message}
+    return {error: getFetchErrorMessage(error)}
   }
 }
