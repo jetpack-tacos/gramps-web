@@ -185,7 +185,6 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
       const checkData = await this.appState.apiGet('/api/blog/check/?days=7')
       if (checkData?.data?.should_generate) {
         // Auto-generate in the background
-        console.log('Auto-generating new blog post...')
         await this.appState.apiPost('/api/blog/generate/')
         // Refresh the blog list
         this._fetchData()
@@ -193,9 +192,8 @@ export class GrampsjsViewBlog extends GrampsjsStaleDataMixin(GrampsjsView) {
           message: this._('A new blog post has been generated!'),
         })
       }
-    } catch (err) {
+    } catch {
       // Silently fail - don't interrupt the user experience
-      console.log('Blog auto-generation check failed:', err)
     }
   }
 }

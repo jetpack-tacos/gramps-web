@@ -54,12 +54,24 @@
       "eslint-config-prettier"
     ],
     "parser": "@babel/eslint-parser",
+    "rules": {
+      "no-console": [
+        "error",
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ]
+    },
     "overrides": [
       {
         "files": [
           "tests/**/*.js"
         ],
         "rules": {
+          "no-console": "off",
           "import/no-extraneous-dependencies": [
             "error",
             {
