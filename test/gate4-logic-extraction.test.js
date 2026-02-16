@@ -8,11 +8,18 @@ import {
 } from '../src/chatApiHelpers.js'
 import {extractPersonIdsFromMarkdown} from '../src/chatMessageUtils.js'
 import {buildExternalSearchData} from '../src/personExternalSearchData.js'
+import {groupConversationsByTime} from '../src/chatSidebarUtils.js'
 import {
   appendDismissedDiscoveryId,
   loadDismissedDiscoveries,
   saveDismissedDiscoveries,
 } from '../src/sharedDiscoveriesStorage.js'
+import {
+  buildSharedDiscoveryPayload,
+  fetchSharedDiscoveries,
+  filterVisibleDiscoveries,
+  shareDiscoveryFromMessage,
+} from '../src/sharedDiscoveriesApiHelpers.js'
 
 import '../src/components/GrampsjsChat.js'
 
@@ -154,5 +161,71 @@ describe('Gate 4 Logic Extraction', () => {
       caughtMessage = err.message
     }
     expect(caughtMessage).to.equal('Failed to load conversations')
+  })
+
+  it('groups conversations by time labels via extracted sidebar helper', () => {
+    const now = new Date('2026-02-16T12:00:00Z')
+    const grouped = groupConversationsByTime(
+      [
+        {id: 'today', updated_at: '2026-02-16T08:00:00Z'},
+        {id: 'yesterday', updated_at: '2026-02-15T08:00:00Z'},
+        {id: 'month', updated_at: '2026-01-20T08:00:00Z'},
+      ],
+      now
+    )
+    expect(grouped.map(group => group.label)).to.deep.equal([
+      'Today',
+      'Yesterday',
+      'This Month',
+    ])
+    expect(grouped[0].items[0].id).to.equal('today')
+  })
+
+  it('shares discoveries using extracted payload/api helper', async () => {
+    let called = null
+    const apiPost = async (url, payload) => {
+      called = {url, payload}
+      return {data: {id: 'shared-1'}}
+    }
+    expect(buildSharedDiscoveryPayload({content: ''})).to.deep.equal({
+      content: '',
+      person_ids: [],
+    })
+
+    const message = {
+      content: 'See [Jane Doe](/person/I0001) and [John](/person/I0002)',
+    }
+    const result = await shareDiscoveryFromMessage(apiPost, message)
+    expect(result).to.deep.equal({shared: true})
+    expect(called).to.deep.equal({
+      url: '/api/shared/',
+      payload: {
+        content: 'See [Jane Doe](/person/I0001) and [John](/person/I0002)',
+        person_ids: ['I0001', 'I0002'],
+      },
+    })
+  })
+
+  it('normalizes shared discoveries API responses and visibility filtering', async () => {
+    const apiGetOk = async () => ({
+      data: {data: [{id: 1}, {id: 2}]},
+    })
+    const apiGetError = async () => ({
+      error: 'failed',
+    })
+
+    expect(await fetchSharedDiscoveries(apiGetOk)).to.deep.equal({
+      discoveries: [{id: 1}, {id: 2}],
+      errorMessage: '',
+    })
+    expect(await fetchSharedDiscoveries(apiGetError)).to.deep.equal({
+      discoveries: [],
+      errorMessage: 'failed',
+    })
+    expect(
+      filterVisibleDiscoveries([{id: 1}, {id: 2}], ['2', '3']).map(
+        discovery => discovery.id
+      )
+    ).to.deep.equal([1])
   })
 })

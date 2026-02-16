@@ -9,18 +9,7 @@ import {sharedStyles} from '../SharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {fireEvent} from '../util.js'
 import {renderIconSvg} from '../icons.js'
-
-function getTimeGroup(dateStr, now) {
-  const date = new Date(dateStr)
-  const diffMs = now - date
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays <= 7) return 'This Week'
-  if (diffDays <= 30) return 'This Month'
-  return 'Older'
-}
+import {groupConversationsByTime} from '../chatSidebarUtils.js'
 
 class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
   static get styles() {
@@ -168,7 +157,7 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
   }
 
   render() {
-    const grouped = this._groupConversations()
+    const grouped = groupConversationsByTime(this.conversations)
     let conversationsContent = ''
     if (this.loading) {
       conversationsContent = html`
@@ -245,24 +234,6 @@ class GrampsjsChatSidebar extends GrampsjsAppStateMixin(LitElement) {
         </md-icon-button>
       </div>
     `
-  }
-
-  _groupConversations() {
-    const now = new Date()
-    const groups = new Map()
-    const order = ['Today', 'Yesterday', 'This Week', 'This Month', 'Older']
-
-    for (const conv of this.conversations) {
-      const label = getTimeGroup(conv.updated_at || conv.created_at, now)
-      if (!groups.has(label)) {
-        groups.set(label, [])
-      }
-      groups.get(label).push(conv)
-    }
-
-    return order
-      .filter(label => groups.has(label))
-      .map(label => ({label, items: groups.get(label)}))
   }
 
   _handleNewChat() {

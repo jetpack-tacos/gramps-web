@@ -3,7 +3,7 @@ import {sharedStyles} from '../SharedStyles.js'
 import {typingDotsStyles} from '../AiSharedStyles.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
 import {renderMarkdownLinks, fireEvent} from '../util.js'
-import {extractPersonIdsFromMarkdown} from '../chatMessageUtils.js'
+import {shareDiscoveryFromMessage} from '../sharedDiscoveriesApiHelpers.js'
 import './GrampsjsChatMessage.js'
 
 class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
@@ -180,17 +180,19 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
   }
 
   async _shareMessage(message, index) {
-    const content = (message.content || message.message || '').trim()
-    if (!content || this._sharingIndex !== -1) {
+    if (this._sharingIndex !== -1) {
       return
     }
 
     this._sharingIndex = index
     try {
-      await this.appState.apiPost('/api/shared/', {
-        content,
-        person_ids: extractPersonIdsFromMarkdown(content),
-      })
+      const {shared} = await shareDiscoveryFromMessage(
+        this.appState.apiPost.bind(this.appState),
+        message
+      )
+      if (!shared) {
+        return
+      }
       fireEvent(this, 'grampsjs:notification', {
         message: this._('Shared to discovery feed'),
       })

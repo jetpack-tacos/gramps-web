@@ -7,12 +7,16 @@ import {mdiDelete} from '@mdi/js'
 import {sharedStyles} from '../SharedStyles.js'
 import {renderIconSvg} from '../icons.js'
 import {GrampsjsAppStateMixin} from '../mixins/GrampsjsAppStateMixin.js'
-import {renderMarkdownLinks, unwrapApiData} from '../util.js'
+import {renderMarkdownLinks} from '../util.js'
 import {
   appendDismissedDiscoveryId,
   loadDismissedDiscoveries,
   saveDismissedDiscoveries,
 } from '../sharedDiscoveriesStorage.js'
+import {
+  fetchSharedDiscoveries,
+  filterVisibleDiscoveries,
+} from '../sharedDiscoveriesApiHelpers.js'
 
 export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   LitElement
@@ -144,9 +148,9 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
   }
 
   _renderFeed() {
-    const visibleDiscoveries = this.discoveries.filter(
-      discovery =>
-        !this.dismissedDiscoveryIds.includes(String(discovery.id || ''))
+    const visibleDiscoveries = filterVisibleDiscoveries(
+      this.discoveries,
+      this.dismissedDiscoveryIds
     )
 
     if (!visibleDiscoveries.length) {
@@ -198,16 +202,11 @@ export class GrampsjsSharedDiscoveries extends GrampsjsAppStateMixin(
     this.error = ''
 
     try {
-      const response = await this.appState.apiGet(
-        '/api/shared/?page=1&pagesize=10'
+      const {discoveries, errorMessage} = await fetchSharedDiscoveries(
+        this.appState.apiGet.bind(this.appState)
       )
-      if (response?.error) {
-        this.discoveries = []
-        this.error = response.error
-        return
-      }
-      const discoveries = unwrapApiData(response, [])
-      this.discoveries = Array.isArray(discoveries) ? discoveries : []
+      this.discoveries = discoveries
+      this.error = errorMessage
     } catch (err) {
       this.error = this._('Failed to load shared discoveries.')
     } finally {
