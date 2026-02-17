@@ -2,7 +2,9 @@ function hasErrorField(value) {
   return Boolean(value && typeof value === 'object' && 'error' in value)
 }
 
-const CHAT_REQUEST_TIMEOUT_MS = 120 * 1000
+const CHAT_REQUEST_TIMEOUT_MS = 30 * 1000
+const CHAT_TASK_POLL_INTERVAL_MS = 1500
+const CHAT_TASK_MAX_WAIT_MS = 10 * 60 * 1000
 
 export function resolveApiErrorMessage(errorOrResponse, fallback) {
   if (typeof errorOrResponse?.error === 'string' && errorOrResponse.error) {
@@ -38,6 +40,72 @@ export function buildChatPayload(query, activeConversationId) {
   return payload
 }
 
+function getTaskResultPayload(taskStatus) {
+  if (
+    taskStatus &&
+    typeof taskStatus === 'object' &&
+    taskStatus.result_object &&
+    typeof taskStatus.result_object === 'object'
+  ) {
+    return taskStatus.result_object
+  }
+  if (taskStatus && typeof taskStatus.result === 'string') {
+    try {
+      return JSON.parse(taskStatus.result)
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
+async function waitForChatTaskResult(apiGet, taskId) {
+  const startedAt = Date.now()
+
+  while (Date.now() - startedAt < CHAT_TASK_MAX_WAIT_MS) {
+    // eslint-disable-next-line no-await-in-loop
+    const statusResponse = await apiGet(`/api/tasks/${taskId}`)
+
+    if (hasErrorField(statusResponse)) {
+      throw new Error(
+        resolveApiErrorMessage(statusResponse, 'Task polling failed')
+      )
+    }
+
+    const taskStatus = statusResponse?.data ?? statusResponse
+    const state = taskStatus?.state
+
+    if (state === 'SUCCESS') {
+      const resultPayload = getTaskResultPayload(taskStatus)
+      if (resultPayload?.response) {
+        return {
+          response: resultPayload.response,
+          conversationId: resultPayload.conversation_id || null,
+        }
+      }
+      throw new Error('Chat task completed without a valid response payload')
+    }
+
+    if (state === 'FAILURE' || state === 'REVOKED') {
+      const details =
+        resolveApiErrorMessage(taskStatus, '') ||
+        taskStatus?.result ||
+        taskStatus?.info ||
+        'Chat task failed'
+      throw new Error(
+        typeof details === 'string' ? details : 'Chat task failed'
+      )
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise(resolve =>
+      setTimeout(resolve, CHAT_TASK_POLL_INTERVAL_MS)
+    )
+  }
+
+  throw new Error('Chat task exceeded maximum wait time')
+}
+
 export async function fetchConversations(apiGet) {
   const apiResponse = await apiGet('/api/conversations/?page=1&pagesize=50')
   if (apiResponse?.data && Array.isArray(apiResponse.data)) {
@@ -70,17 +138,34 @@ export async function deleteConversation(apiDelete, id) {
   return apiResponse
 }
 
-export async function sendChatPrompt(apiPost, query, activeConversationId) {
+export async function sendChatPrompt(
+  apiPost,
+  apiGet,
+  query,
+  activeConversationId
+) {
   const payload = buildChatPayload(query, activeConversationId)
-  const apiResponse = await apiPost('/api/chat/', payload, {
+  const apiResponse = await apiPost('/api/chat/?background=true', payload, {
     dbChanged: false,
     timeoutMs: CHAT_REQUEST_TIMEOUT_MS,
   })
-  if (hasErrorField(apiResponse) || !apiResponse?.data?.response) {
+
+  if (hasErrorField(apiResponse)) {
     throw new Error(resolveApiErrorMessage(apiResponse, 'An error occurred'))
   }
-  return {
-    response: apiResponse.data.response,
-    conversationId: apiResponse.data.conversation_id || null,
+
+  // Some environments may execute immediately without returning a task.
+  if (apiResponse?.data?.response) {
+    return {
+      response: apiResponse.data.response,
+      conversationId: apiResponse.data.conversation_id || null,
+    }
   }
+
+  const taskId = apiResponse?.task?.id
+  if (!taskId) {
+    throw new Error('Chat request did not return a task id')
+  }
+
+  return waitForChatTaskResult(apiGet, taskId)
 }

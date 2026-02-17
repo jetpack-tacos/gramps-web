@@ -242,6 +242,7 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     try {
       const {response: aiResponse, conversationId} = await sendChatPrompt(
         this.appState.apiPost.bind(this.appState),
+        this.appState.apiGet.bind(this.appState),
         query,
         this.activeConversationId
       )
