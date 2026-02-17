@@ -2,6 +2,8 @@ function hasErrorField(value) {
   return Boolean(value && typeof value === 'object' && 'error' in value)
 }
 
+const CHAT_REQUEST_TIMEOUT_MS = 120 * 1000
+
 export function resolveApiErrorMessage(errorOrResponse, fallback) {
   if (typeof errorOrResponse?.error === 'string' && errorOrResponse.error) {
     return errorOrResponse.error
@@ -70,7 +72,10 @@ export async function deleteConversation(apiDelete, id) {
 
 export async function sendChatPrompt(apiPost, query, activeConversationId) {
   const payload = buildChatPayload(query, activeConversationId)
-  const apiResponse = await apiPost('/api/chat/', payload, {dbChanged: false})
+  const apiResponse = await apiPost('/api/chat/', payload, {
+    dbChanged: false,
+    timeoutMs: CHAT_REQUEST_TIMEOUT_MS,
+  })
   if (hasErrorField(apiResponse) || !apiResponse?.data?.response) {
     throw new Error(resolveApiErrorMessage(apiResponse, 'An error occurred'))
   }

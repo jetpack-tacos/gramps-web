@@ -27,9 +27,13 @@ function getFetchErrorMessage(error) {
   return error.message
 }
 
-async function fetchWithTimeout(url, options = {}) {
+async function fetchWithTimeout(
+  url,
+  options = {},
+  timeoutMs = REQUEST_TIMEOUT_MS
+) {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
   try {
     return await fetch(url, {...options, signal: controller.signal})
   } finally {
@@ -835,7 +839,12 @@ export async function apiPutPostDeleteNew(
   method,
   endpoint,
   payload,
-  {isJson = true, dbChanged = true, requireFresh = false} = {}
+  {
+    isJson = true,
+    dbChanged = true,
+    requireFresh = false,
+    timeoutMs = REQUEST_TIMEOUT_MS,
+  } = {}
 ) {
   try {
     let headers = {}
@@ -851,11 +860,15 @@ export async function apiPutPostDeleteNew(
     if (isJson) {
       headers['Content-Type'] = 'application/json'
     }
-    const resp = await fetchWithTimeout(`${__APIHOST__}${endpoint}`, {
-      method,
-      headers,
-      body: isJson ? JSON.stringify(payload) : payload,
-    })
+    const resp = await fetchWithTimeout(
+      `${__APIHOST__}${endpoint}`,
+      {
+        method,
+        headers,
+        body: isJson ? JSON.stringify(payload) : payload,
+      },
+      timeoutMs
+    )
     let resJson
     try {
       resJson = await resp.json()
