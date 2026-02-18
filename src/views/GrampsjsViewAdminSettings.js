@@ -7,6 +7,7 @@ import '../components/GrampsjsMediaFileStatus.js'
 import '../components/GrampsjsMediaStatus.js'
 import '../components/GrampsjsDeleteAll.js'
 import '../components/GrampsjsRelogin.js'
+import '../components/GrampsjsSearchGroundingSettings.js'
 import '../components/GrampsjsTaskProgressIndicator.js'
 import '../components/GrampsjsTreeQuotas.js'
 
@@ -95,6 +96,12 @@ export class GrampsjsViewAdminSettings extends GrampsjsView {
       <h3>${this._('Usage quotas')}</h3>
 
       <grampsjs-tree-quotas .appState="${this.appState}"></grampsjs-tree-quotas>
+      ${this.appState.dbInfo?.server?.chat
+        ? html`<h3>${this._('Search grounding')}</h3>
+            <grampsjs-search-grounding-settings
+              .appState="${this.appState}"
+            ></grampsjs-search-grounding-settings>`
+        : ''}
       <grampsjs-import .appState="${this.appState}"></grampsjs-import>
 
       <grampsjs-media-status
