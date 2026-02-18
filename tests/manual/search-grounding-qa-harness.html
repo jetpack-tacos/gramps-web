@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Grounding QA Harness</title>
+    <style>
+      :root {
+        font-family: 'Segoe UI', Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #f3f5f8;
+      }
+
+      .shell {
+        max-width: 980px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell" id="root"></div>
+
+    <script type="module">
+      import '../../src/components/GrampsjsSearchGroundingSettings.js'
+
+      const fixtures = {
+        near_limit: {
+          effective_mode: 'auto',
+          caps: {soft_cap: 4000, hard_cap: 5000, free_tier_limit: 5000},
+          usage: {
+            free_tier_used: 4999,
+            free_tier_remaining: 1,
+            free_tier_status: 'near_limit',
+            resets_at_utc: '2026-03-01T00:00:00Z',
+            grounded_prompts_count: 4120,
+            web_search_queries_count: 4999,
+          },
+          estimated_cost_usd_month: 0,
+        },
+        exhausted: {
+          effective_mode: 'auto',
+          caps: {soft_cap: 4000, hard_cap: 5000, free_tier_limit: 5000},
+          usage: {
+            free_tier_used: 5000,
+            free_tier_remaining: 0,
+            free_tier_status: 'exhausted',
+            resets_at_utc: '2026-03-01T00:00:00Z',
+            grounded_prompts_count: 4200,
+            web_search_queries_count: 5000,
+          },
+          estimated_cost_usd_month: 0,
+        },
+        rollover_before: {
+          effective_mode: 'auto',
+          caps: {soft_cap: 4000, hard_cap: 5000, free_tier_limit: 5000},
+          usage: {
+            free_tier_used: 5000,
+            free_tier_remaining: 0,
+            free_tier_status: 'exhausted',
+            resets_at_utc: '2026-03-01T00:00:00Z',
+            grounded_prompts_count: 5000,
+            web_search_queries_count: 5000,
+          },
+          estimated_cost_usd_month: 0,
+        },
+        rollover_after: {
+          effective_mode: 'auto',
+          caps: {soft_cap: 4000, hard_cap: 5000, free_tier_limit: 5000},
+          usage: {
+            free_tier_used: 0,
+            free_tier_remaining: 5000,
+            free_tier_status: 'normal',
+            resets_at_utc: '2026-04-01T00:00:00Z',
+            grounded_prompts_count: 0,
+            web_search_queries_count: 0,
+          },
+          estimated_cost_usd_month: 0,
+        },
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const state = params.get('state') || 'near_limit'
+      const fixture = fixtures[state] || fixtures.near_limit
+
+      const root = document.getElementById('root')
+      const element = document.createElement('grampsjs-search-grounding-settings')
+
+      element.appState = {
+        i18n: {strings: {}},
+        permissions: {canUseChat: true},
+        dbInfo: {server: {chat: true}},
+        apiGet: async () => ({data: fixture}),
+        apiPut: async (_url, payload) => ({
+          data: {
+            ...fixture,
+            effective_mode: payload.mode,
+            caps: {
+              ...fixture.caps,
+              soft_cap: payload.soft_cap,
+              hard_cap: payload.hard_cap,
+            },
+          },
+        }),
+      }
+
+      root.appendChild(element)
+    </script>
+  </body>
+</html>
