@@ -100,6 +100,8 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
       messages: {type: Array},
       loading: {type: Boolean},
       _sharingIndex: {state: true},
+      // Index of the message that should animate in (newly arrived, not history)
+      _newMessageIndex: {state: true},
     }
   }
 
@@ -108,6 +110,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
     this.messages = []
     this.loading = false
     this._sharingIndex = -1
+    this._newMessageIndex = -1
   }
 
   render() {
@@ -125,7 +128,7 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
           ${this.messages.map(
             (message, i) => html`
               <grampsjs-chat-message
-                class="${i === this.messages.length - 1 ? 'fade-in' : ''}"
+                class="${i === this._newMessageIndex ? 'fade-in' : ''}"
                 type="${message.role}"
                 .appState="${this.appState}"
                 >${message.role === 'ai'
@@ -134,7 +137,9 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
                       )}<button
                         class="share-button"
                         type="button"
-                        aria-label="${this._('Share')}"
+                        aria-label="${this._sharingIndex === i
+                          ? this._('Sharing')
+                          : this._('Share')}"
                         title="${this._('Share')}"
                         ?disabled="${this._sharingIndex === i}"
                         @click=${() => this._shareMessage(message, i)}
@@ -167,14 +172,37 @@ class GrampsjsChatMessages extends GrampsjsAppStateMixin(LitElement) {
 
   updated(changed) {
     super.updated(changed)
-    if (changed.has('messages') || changed.has('loading')) {
-      this._scrollToBottom()
+    if (changed.has('messages')) {
+      const prev = changed.get('messages') || []
+      // A single new message appended — always scroll to show it
+      if (this.messages.length === prev.length + 1) {
+        // Mark it as the "new" message for fade-in (only live additions, not history)
+        this._newMessageIndex = this.messages.length - 1
+        this._scrollToBottom(true)
+      } else {
+        // Batch load (conversation switch) — scroll to bottom, clear any stale fade target
+        this._newMessageIndex = -1
+        this._scrollToBottom(true)
+      }
+    }
+    if (changed.has('loading') && this.loading) {
+      // Typing indicator appeared — only scroll if user is already near the bottom
+      this._scrollToBottom(false)
     }
   }
 
-  _scrollToBottom() {
+  // Scroll to the bottom of the messages container.
+  // force=true always scrolls; force=false only scrolls if within 150px of bottom.
+  _scrollToBottom(force = true) {
     const container = this.renderRoot.querySelector('.messages-container')
-    if (container) {
+    if (!container) return
+    if (force) {
+      container.scrollTop = container.scrollHeight
+      return
+    }
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight
+    if (distanceFromBottom <= 150) {
       container.scrollTop = container.scrollHeight
     }
   }

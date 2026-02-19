@@ -172,10 +172,13 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
     const {id} = e.detail
     if (!id || id === this.activeConversationId) return
 
+    // Close mobile sidebar immediately (fix: parent state must mirror child state)
+    this._sidebarOpen = false
     this.activeConversationId = id
-    this.messages = []
     this.loading = true
     this._chatErrorMessage = ''
+    // Don't clear messages yet — keep previous visible until load succeeds
+    const previousMessages = this.messages
 
     try {
       this.messages = await fetchConversationMessages(
@@ -183,15 +186,13 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
         id
       )
     } catch (err) {
-      this._chatErrorMessage = resolveApiErrorMessage(
+      // Restore previous messages so the user isn't left with a blank screen
+      this.messages = previousMessages
+      const errorMessage = resolveApiErrorMessage(
         err,
         this._('Failed to load conversation')
       )
-      this.messages = [
-        ...this.messages,
-        {role: 'error', content: this._chatErrorMessage},
-      ]
-      fireEvent(this, 'grampsjs:error', {message: this._chatErrorMessage})
+      fireEvent(this, 'grampsjs:error', {message: errorMessage})
     } finally {
       this.loading = false
     }
@@ -216,15 +217,12 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
         this.messages = []
       }
     } catch (err) {
-      this._chatErrorMessage = resolveApiErrorMessage(
+      // Show delete failure as a notification, not as a chat message
+      const errorMessage = resolveApiErrorMessage(
         err,
-        this._('An error occurred')
+        this._('Failed to delete conversation')
       )
-      this.messages = [
-        ...this.messages,
-        {role: 'error', content: this._chatErrorMessage},
-      ]
-      fireEvent(this, 'grampsjs:error', {message: this._chatErrorMessage})
+      fireEvent(this, 'grampsjs:error', {message: errorMessage})
     }
   }
 
@@ -248,13 +246,23 @@ class GrampsjsChat extends GrampsjsAppStateMixin(LitElement) {
       )
       this.messages = [...this.messages, {role: 'ai', content: aiResponse}]
 
-      // Update conversation ID from response (new conversation case)
       if (conversationId) {
+        const isNewConversation = !this.activeConversationId
         this.activeConversationId = conversationId
-      }
 
-      // Refresh sidebar to show new/updated conversation
-      this._fetchConversations()
+        if (isNewConversation) {
+          // New conversation: fetch the list to get the server-assigned title
+          this._fetchConversations()
+        } else {
+          // Existing conversation: move it to the top in-place (no round-trip)
+          const now = new Date().toISOString()
+          const existing = this.conversations.find(c => c.id === conversationId)
+          if (existing) {
+            const rest = this.conversations.filter(c => c.id !== conversationId)
+            this.conversations = [{...existing, updated_at: now}, ...rest]
+          }
+        }
+      }
     } catch (err) {
       this._chatErrorMessage = resolveApiErrorMessage(
         err,

@@ -47,6 +47,11 @@ class GrampsjsChatMessage extends GrampsjsAppStateMixin(LitElement) {
           border: 0;
         }
 
+        .container.error .slot-wrap {
+          color: var(--md-sys-color-error, #b3261e);
+          font-size: 14px;
+        }
+
         .slot-wrap {
           white-space: pre-wrap;
           flex-grow: 1;

@@ -76,7 +76,7 @@ class GrampsjsChatPrompt extends GrampsjsAppStateMixin(LitElement) {
         <md-filled-icon-button
           @click="${this._handleBtnClick}"
           class="send"
-          ?disabled="${this.loading}"
+          ?disabled="${this.loading || !this.value.trim()}"
         >
           <md-icon
             >${renderIconSvg(
@@ -127,6 +127,7 @@ class GrampsjsChatPrompt extends GrampsjsAppStateMixin(LitElement) {
   _updateNRows() {
     if (!this.value) {
       this.nRows = 1
+      return
     }
     this.nRows = Math.min(this.maxRows, this.value.split('\n').length)
   }
